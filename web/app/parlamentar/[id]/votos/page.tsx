@@ -1,18 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getCoberturaVotosCompleta, getIdsEmExercicio, getPerfil, getTodosVotos, textoCobertura } from "@/lib/perfil";
+import { getCoberturaVotosCompleta, getPerfil, getTodosVotos, idDoParametro, PARAMS_DE_BUILD, textoCobertura } from "@/lib/perfil";
 import { ListaVotos } from "../componentes";
 import styles from "../perfil.module.css";
 
-// Só um perfil pré-gerado (exigência do cache components); os demais são gerados na primeira visita.
-export async function generateStaticParams() {
-  const [primeiro] = await getIdsEmExercicio();
-  return [{ id: String(primeiro) }];
+export function generateStaticParams() {
+  return PARAMS_DE_BUILD;
 }
 
 export async function generateMetadata({ params }: PageProps<"/parlamentar/[id]/votos">) {
-  const perfil = await getPerfil(Number((await params).id));
+  const id = idDoParametro((await params).id);
+  const perfil = id ? await getPerfil(id) : null;
   return { title: perfil ? `Votos de ${perfil.nome} | Monitor Legislativo` : "Monitor Legislativo" };
 }
 
@@ -25,8 +24,8 @@ export default function Page(props: PageProps<"/parlamentar/[id]/votos">) {
 }
 
 async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]/votos">["params"] }) {
-  const id = Number((await params).id);
-  if (!Number.isInteger(id)) notFound();
+  const id = idDoParametro((await params).id);
+  if (!id) notFound();
   const [p, votos, completa] = await Promise.all([getPerfil(id), getTodosVotos(id), getCoberturaVotosCompleta()]);
   if (!p) notFound();
 

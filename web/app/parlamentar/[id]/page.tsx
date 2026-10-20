@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import {
   getCoberturaVotosCompleta,
-  getIdsEmExercicio,
+  idDoParametro,
+  PARAMS_DE_BUILD,
   getPerfil,
   textoCobertura,
   type Legislatura,
@@ -12,16 +13,13 @@ import {
 import { cargo, ListaVotos, Localizador } from "./componentes";
 import styles from "./perfil.module.css";
 
-// Só um perfil no build (exigência do cache components). Os demais são gerados na primeira
-// visita, pela função em São Paulo ao lado do banco, e ficam em cache. Pré-gerar os ~600 no
-// build da Vercel (fora do Brasil) estoura o tempo limite dos dados em cache.
-export async function generateStaticParams() {
-  const [primeiro] = await getIdsEmExercicio();
-  return [{ id: String(primeiro) }];
+export function generateStaticParams() {
+  return PARAMS_DE_BUILD;
 }
 
 export async function generateMetadata({ params }: PageProps<"/parlamentar/[id]">) {
-  const perfil = await getPerfil(Number((await params).id));
+  const id = idDoParametro((await params).id);
+  const perfil = id ? await getPerfil(id) : null;
   return { title: perfil ? `${perfil.nome} | Monitor Legislativo` : "Monitor Legislativo" };
 }
 
@@ -36,8 +34,8 @@ export default function Page(props: PageProps<"/parlamentar/[id]">) {
 }
 
 async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["params"] }) {
-  const id = Number((await params).id);
-  if (!Number.isInteger(id)) notFound();
+  const id = idDoParametro((await params).id);
+  if (!id) notFound();
   const [p, completa] = await Promise.all([getPerfil(id), getCoberturaVotosCompleta()]);
   if (!p) notFound();
 

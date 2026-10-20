@@ -54,6 +54,16 @@ export type Perfil = {
 
 const LIMITE_VOTOS = 40;
 
+// O cache components exige ao menos um parâmetro no build. Usamos um id que não existe e é
+// recusado sem consultar o banco: o build não depende da conexão, e cada perfil é gerado na
+// primeira visita (pela função em São Paulo, ao lado do banco) e fica em cache.
+export const PARAMS_DE_BUILD = [{ id: "0" }];
+
+export function idDoParametro(valor: string): number | null {
+  const id = Number(valor);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
 export async function getIdsEmExercicio(): Promise<number[]> {
   "use cache";
   cacheLife("hours");
