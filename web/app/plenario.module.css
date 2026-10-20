@@ -1,80 +1,98 @@
 .raiz {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.75rem;
+  padding-top: 1.25rem;
 }
 
-/* Abas: as três casas, lado a lado; empilham no celular. */
+/* Abas: controles padrão, sublinhado âmbar na casa aberta. */
 .abas {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  gap: 0.25rem;
   border-bottom: 1px solid var(--linha);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .aba {
   display: grid;
-  gap: 0.15rem;
+  gap: 0.1rem;
+  flex: 1 1 0;
+  min-width: 7.5rem;
   text-align: left;
-  padding: 0.9rem 1rem 1rem;
+  padding: 0.75rem 0.9rem 0.85rem;
   background: none;
   border: 0;
-  border-bottom: 4px solid transparent;
+  border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  color: var(--nevoa);
   cursor: pointer;
+  transition: color 160ms ease-out, border-color 160ms ease-out, background-color 160ms ease-out;
 }
 
 .aba:hover {
-  background: var(--superficie);
+  color: var(--poeira);
+  background: color-mix(in srgb, var(--indigo) 55%, transparent);
 }
 
 .aba[aria-selected="true"] {
-  border-bottom-color: var(--tinta);
+  color: var(--poeira);
+  border-bottom-color: var(--ambar);
 }
 
 .abaTitulo {
-  font-size: clamp(1.125rem, 0.95rem + 0.8vw, 1.5rem);
+  font-size: 1.0625rem;
   font-weight: 700;
-  line-height: 1.2;
 }
 
 .abaDetalhe {
-  font-size: 0.875rem;
-  color: var(--tinta-3);
+  font-size: 0.8125rem;
+  color: var(--nevoa-2);
+  font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 40rem) {
-  .abas {
-    grid-template-columns: 1fr;
-    border-bottom: 0;
-  }
-  .aba {
-    border-bottom: 1px solid var(--linha);
-    border-left: 4px solid transparent;
-    margin-bottom: 0;
-  }
-  .aba[aria-selected="true"] {
-    border-bottom-color: var(--linha);
-    border-left-color: var(--tinta);
-  }
-}
-
-.convite,
-.emConstrucao p {
-  color: var(--tinta-2);
-  max-width: 40rem;
+.titulo {
   margin: 0;
+  font-family: var(--fonte-nomes), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
 }
 
-.emConstrucao h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.25rem;
+.emConstrucao {
+  display: grid;
+  gap: 0.75rem;
+  padding-block: 1rem 3rem;
+}
+
+.emConstrucao p {
+  margin: 0;
+  max-width: 38rem;
+  color: var(--nevoa);
 }
 
 .casa {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
-/* Filtros numa linha acima do gráfico. */
+.cabecalhoCasa {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.resumo {
+  margin: 0;
+  color: var(--nevoa);
+  font-variant-numeric: tabular-nums;
+}
+
+.resumo strong {
+  color: var(--poeira);
+}
+
+/* Filtros numa linha acima da carta. */
 .filtros {
   display: flex;
   flex-wrap: wrap;
@@ -84,52 +102,77 @@
 
 .campo {
   display: grid;
-  gap: 0.25rem;
-  font-size: 0.875rem;
-  color: var(--tinta-2);
+  gap: 0.35rem;
   flex: 1 1 14rem;
-  max-width: 22rem;
+  max-width: 24rem;
+}
+
+.campo label {
+  font-size: 0.875rem;
+  color: var(--nevoa);
 }
 
 .campo input,
 .campo select {
   width: 100%;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid var(--linha);
-  border-radius: 6px;
-  background: var(--superficie);
-  color: var(--tinta);
+  min-height: 2.75rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--indigo);
+  color: var(--poeira);
   font-size: 1rem;
+  transition: border-color 160ms ease-out;
+}
+
+.campo input::placeholder {
+  color: var(--nevoa-2);
+}
+
+.campo input:hover,
+.campo select:hover {
+  border-color: var(--nevoa-2);
+}
+
+.campo input:focus-visible,
+.campo select:focus-visible {
+  outline: none;
+  border-color: var(--ambar);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ambar) 28%, transparent);
 }
 
 .limpar {
-  padding: 0.55rem 0.9rem;
-  border: 1px solid var(--linha);
-  border-radius: 6px;
+  min-height: 2.75rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
   background: none;
+  color: var(--poeira);
   cursor: pointer;
 }
 
 .limpar:hover {
-  background: var(--superficie);
-}
-
-.resumo {
-  margin: 0;
-  color: var(--tinta-2);
+  border-color: var(--ambar);
+  color: var(--ambar);
 }
 
 .grade {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 17rem;
-  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr) 19rem;
+  gap: 2.5rem;
   align-items: start;
 }
 
-@media (max-width: 52rem) {
+@media (max-width: 56rem) {
   .grade {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
+}
+
+.carta {
+  display: grid;
+  gap: 1rem;
 }
 
 .grafico {
@@ -142,40 +185,98 @@
   height: auto;
   cursor: pointer;
   touch-action: manipulation;
+  overflow: visible;
+}
+
+.reticula {
+  fill: none;
+  stroke: var(--linha);
+  stroke-width: 0.0035;
 }
 
 .cadeira {
-  stroke: transparent;
-  transition: opacity 160ms ease;
+  transition: opacity 200ms ease-out;
 }
 
 .cadeira[data-apagada] {
-  opacity: 0.13;
+  opacity: 0.16;
 }
 
-.cadeira[data-selecionada] {
-  stroke: var(--tinta);
-  opacity: 1;
+/* A mira do observador: única aparição do vermelho-lanterna. */
+.mira {
+  fill: none;
+  stroke: var(--lanterna);
+  stroke-linecap: round;
+  animation: mirar 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes mirar {
+  from {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+.coordenadas {
+  position: absolute;
+  display: grid;
+  gap: 0.05rem;
+  padding: 0.3rem 0.55rem 0.35rem;
+  pointer-events: none;
+  white-space: nowrap;
+  color: #ff8a70;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--ceu) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--lanterna) 55%, transparent);
+  border-radius: 4px;
+  box-shadow: var(--sombra);
+  z-index: 1;
+}
+
+.coordenadas span:first-child {
+  font-family: var(--fonte-nomes), Georgia, serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--poeira);
+}
+
+.coordenadas[data-lado="direita"] {
+  transform: translate(1.6rem, -50%);
+}
+
+.coordenadas[data-lado="esquerda"] {
+  transform: translate(calc(-100% - 1.6rem), -50%);
+  text-align: right;
 }
 
 .dica {
   position: absolute;
-  transform: translate(-50%, calc(-100% - 12px));
+  transform: translate(-50%, calc(-100% - 14px));
   pointer-events: none;
   display: grid;
-  padding: 0.4rem 0.6rem;
-  background: var(--tinta);
-  color: var(--fundo);
-  border-radius: 6px;
+  padding: 0.45rem 0.65rem;
+  background: var(--indigo-2);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
   font-size: 0.875rem;
   line-height: 1.3;
   white-space: nowrap;
-  z-index: 1;
+  z-index: 2;
+}
+
+.dica span {
+  color: var(--nevoa);
 }
 
 .encontrados {
   list-style: none;
-  margin: 0.75rem 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
@@ -183,93 +284,161 @@
 }
 
 .encontrados button {
-  padding: 0.35rem 0.7rem;
-  border: 1px solid var(--linha);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--linha-forte);
   border-radius: 999px;
-  background: var(--superficie);
+  background: var(--indigo);
   cursor: pointer;
 }
 
-.encontrados button[aria-pressed="true"] {
-  border-color: var(--tinta);
+.encontrados button:hover {
+  border-color: var(--nevoa-2);
 }
 
-.encontrados span {
-  color: var(--tinta-3);
+.encontrados button[aria-pressed="true"] {
+  border-color: var(--lanterna);
+}
+
+.encontradoMeta {
+  color: var(--nevoa);
+  font-size: 0.875rem;
 }
 
 .vazio {
-  margin: 0.75rem 0 0;
-  color: var(--tinta-2);
+  margin: 0;
+  color: var(--nevoa);
 }
 
 .lateral {
   display: grid;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
-/* Cartão do parlamentar selecionado. A borda leva a cor do partido; o texto, não. */
+.dicaCartao {
+  margin: 0;
+  padding: 1rem;
+  border: 1px dashed var(--linha-forte);
+  border-radius: var(--raio);
+  color: var(--nevoa);
+  font-size: 0.9375rem;
+}
+
+/* Cartão do parlamentar selecionado. */
 .cartao {
   position: relative;
   display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--indigo);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+}
+
+.cartaoTopo {
+  display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.9rem;
-  padding: 0.9rem;
-  background: var(--superficie);
-  border: 1px solid var(--linha);
-  border-left-width: 6px;
-  border-radius: 8px;
 }
 
 .cartao img {
-  width: 84px;
-  height: 112px;
+  width: 72px;
+  height: 96px;
   object-fit: cover;
   border-radius: 4px;
   background: var(--linha);
 }
 
 .cartao h2 {
-  margin: 0 1.5rem 0.4rem 0;
-  font-size: 1.125rem;
-  line-height: 1.25;
+  margin: 0 2rem 0.5rem 0;
+  font-family: var(--fonte-nomes), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.375rem;
+  line-height: 1.15;
 }
 
-.cartao dl {
-  margin: 0 0 0.6rem;
-  font-size: 0.875rem;
-  line-height: 1.35;
+.coordenadasCartao {
+  margin: 0;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.9375rem;
 }
 
-.cartao dt {
-  color: var(--tinta-3);
-  font-size: 0.8125rem;
+.coordenadasCartao div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--linha);
+  padding-bottom: 0.25rem;
 }
 
-.cartao dd {
-  margin: 0 0 0.4rem;
+.coordenadasCartao dt {
+  color: var(--nevoa);
 }
 
-.cartao a {
-  font-size: 0.875rem;
+.coordenadasCartao dd {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+}
+
+.atividade {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--raio);
+  background: var(--ambar);
+  color: var(--ceu);
   font-weight: 700;
+  text-decoration: none;
+  transition: background-color 160ms ease-out;
+}
+
+.atividade:hover {
+  background: #ffc68c;
+}
+
+.oficial {
+  font-size: 0.9375rem;
+  color: var(--nevoa);
 }
 
 .fechar {
   position: absolute;
-  top: 0.35rem;
-  right: 0.35rem;
-  width: 2rem;
-  height: 2rem;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
   border: 0;
+  border-radius: var(--raio);
   background: none;
-  font-size: 1.4rem;
-  line-height: 1;
+  color: var(--nevoa);
   cursor: pointer;
-  color: var(--tinta-2);
 }
 
-/* Legenda em forma de tabela: identidade nunca só pela cor. */
+.fechar:hover {
+  color: var(--poeira);
+  background: var(--indigo-2);
+}
+
+/* Legenda em tabela: identidade nunca só pela cor. */
 .legenda {
   width: 100%;
   border-collapse: collapse;
@@ -279,16 +448,16 @@
 .legenda caption {
   text-align: left;
   font-weight: 700;
-  padding-bottom: 0.4rem;
+  padding-bottom: 0.5rem;
 }
 
 .legenda th {
   text-align: left;
   font-weight: 400;
   font-size: 0.8125rem;
-  color: var(--tinta-3);
-  border-bottom: 1px solid var(--linha);
-  padding: 0.25rem 0;
+  color: var(--nevoa);
+  border-bottom: 1px solid var(--linha-forte);
+  padding: 0.3rem 0;
 }
 
 .legenda th:last-child,
@@ -302,32 +471,39 @@
 }
 
 .legenda tr[data-apagada] {
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
 .numero {
   font-variant-numeric: tabular-nums;
+  color: var(--nevoa);
 }
 
 .legendaItem {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.6rem;
   width: 100%;
-  padding: 0.35rem 0;
+  min-height: 2.25rem;
+  padding: 0.3rem 0;
   border: 0;
   background: none;
   text-align: left;
   cursor: pointer;
 }
 
+.legendaItem:hover {
+  color: var(--ambar);
+}
+
 .legendaItem[aria-pressed="true"] {
+  color: var(--ambar);
   font-weight: 700;
 }
 
 .amostra {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: 0.7rem;
+  height: 0.7rem;
   border-radius: 50%;
   flex: none;
 }
@@ -335,16 +511,20 @@
 .lista summary {
   cursor: pointer;
   font-weight: 700;
-  padding-block: 0.4rem;
+  padding-block: 0.5rem;
+  width: fit-content;
+}
+
+.lista summary:hover {
+  color: var(--ambar);
 }
 
 .tabelaRolagem {
-  overflow-x: auto;
+  overflow: auto;
   max-height: 28rem;
-  overflow-y: auto;
-  border: 1px solid var(--linha);
-  border-radius: 6px;
-  background: var(--superficie);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--indigo);
 }
 
 .tabelaRolagem table {
@@ -356,26 +536,16 @@
 .tabelaRolagem th {
   position: sticky;
   top: 0;
-  background: var(--superficie);
+  background: var(--indigo);
   text-align: left;
   font-weight: 400;
   font-size: 0.8125rem;
-  color: var(--tinta-3);
-  padding: 0.4rem 0.75rem;
-  border-bottom: 1px solid var(--linha);
+  color: var(--nevoa);
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--linha-forte);
 }
 
 .tabelaRolagem td {
-  padding: 0.3rem 0.75rem;
+  padding: 0.4rem 0.9rem;
   border-bottom: 1px solid var(--linha);
-}
-
-.linkBotao {
-  padding: 0;
-  border: 0;
-  background: none;
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-  cursor: pointer;
-  text-align: left;
 }

@@ -3,7 +3,7 @@
 
 export type Cadeira = { x: number; y: number };
 
-const RAIO_INTERNO = 0.38;
+export const RAIO_INTERNO = 0.38;
 
 export function layoutHemiciclo(total: number): { cadeiras: Cadeira[]; raioPonto: number } {
   if (total === 0) return { cadeiras: [], raioPonto: 0 };

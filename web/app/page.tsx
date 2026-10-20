@@ -33,26 +33,24 @@ export default async function Home() {
 
   return (
     <>
-      <header className="cabecalho">
-        <h1>Monitor Legislativo</h1>
-        <p>Quem ocupa cada cadeira no Congresso Nacional, com dados das fontes oficiais.</p>
-      </header>
-      <main>
+      <main className="moldura">
         <Plenario casas={{ senado, camara }} slots={slots} />
       </main>
       <footer className="rodape">
-        <p>
-          Fontes:{" "}
-          <a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener noreferrer">
-            Dados Abertos da Câmara dos Deputados
-          </a>{" "}
-          e{" "}
-          <a href="https://legis.senado.leg.br/dadosabertos" target="_blank" rel="noopener noreferrer">
-            Dados Abertos do Senado Federal
-          </a>
-          .{atualizadoEm && ` Atualizado em ${atualizadoEm}.`}
-        </p>
-        <p>Site independente, sem vínculo com partidos, parlamentares ou governos.</p>
+        <div className="moldura">
+          <p>
+            Fontes:{" "}
+            <a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener noreferrer">
+              Dados Abertos da Câmara dos Deputados
+            </a>{" "}
+            e{" "}
+            <a href="https://legis.senado.leg.br/dadosabertos" target="_blank" rel="noopener noreferrer">
+              Dados Abertos do Senado Federal
+            </a>
+            .{atualizadoEm && ` Atualizado em ${atualizadoEm}.`}
+          </p>
+          <p>Site independente, sem vínculo com partidos, parlamentares ou governos.</p>
+        </div>
       </footer>
     </>
   );

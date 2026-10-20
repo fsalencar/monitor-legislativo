@@ -1,46 +1,30 @@
+/* Atlas Celeste: o plenário como carta do céu noturno. Tema único, escuro. */
 :root {
-  color-scheme: light;
-  --fundo: #f5f6f4;
-  --superficie: #fcfcfb;
-  --tinta: #1d2125;
-  --tinta-2: #4f565c;
-  --tinta-3: #6c737a;
-  --linha: #d9dcd8;
-  --foco: #1f5fbf;
+  color-scheme: dark;
+  --ceu: #0a1021;
+  --indigo: #16233d;
+  --indigo-2: #1c2b49;
+  --linha: #24374f;
+  --linha-forte: #34496a;
+  --poeira: #f2f2e9;
+  --nevoa: #9aa6bd;
+  --nevoa-2: #8a96ad;
+  --ambar: #ffb36b;
+  --lanterna: #ff5a3c;
 
-  /* Paleta categórica validada (claro); ordem fixa, sem ciclar. */
-  --serie-1: #2a78d6;
-  --serie-2: #eb6834;
-  --serie-3: #1baf7a;
-  --serie-4: #eda100;
-  --serie-5: #e87ba4;
+  /* Paleta categórica validada para o fundo escuro; ordem fixa, sem ciclar. */
+  --serie-1: #3987e5;
+  --serie-2: #d95926;
+  --serie-3: #199e70;
+  --serie-4: #c98500;
+  --serie-5: #d55181;
   --serie-6: #008300;
-  --serie-7: #6250d6;
-  --serie-8: #e34948;
-  --serie-outros: #a3a29b;
-}
+  --serie-7: #9085e9;
+  --serie-8: #e66767;
+  --serie-outros: #6b7385;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --fundo: #141514;
-    --superficie: #1a1a19;
-    --tinta: #eeefec;
-    --tinta-2: #c3c4bf;
-    --tinta-3: #9a9c97;
-    --linha: #34363a;
-    --foco: #7fb0f5;
-
-    --serie-1: #3987e5;
-    --serie-2: #d95926;
-    --serie-3: #199e70;
-    --serie-4: #c98500;
-    --serie-5: #d55181;
-    --serie-6: #008300;
-    --serie-7: #9085e9;
-    --serie-8: #e66767;
-    --serie-outros: #6b6a64;
-  }
+  --raio: 6px;
+  --sombra: 0 10px 30px -12px rgb(0 0 0 / 0.6);
 }
 
 * {
@@ -49,31 +33,42 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  background: var(--ceu);
+  scrollbar-color: var(--linha-forte) var(--ceu);
+  accent-color: var(--ambar);
 }
 
 body {
   margin: 0;
-  background: var(--fundo);
-  color: var(--tinta);
-  font-family: var(--fonte), system-ui, sans-serif;
+  min-height: 100dvh;
+  background: var(--ceu);
+  color: var(--poeira);
+  font-family: var(--fonte-ui), system-ui, sans-serif;
   font-size: 1rem;
   line-height: 1.5;
-  padding-inline: max(1rem, env(safe-area-inset-left));
+  caret-color: var(--ambar);
 }
 
-body > * {
-  max-width: 72rem;
-  margin-inline: auto;
+::selection {
+  background: var(--ambar);
+  color: var(--ceu);
 }
 
 a {
   color: inherit;
-  text-underline-offset: 0.18em;
+  text-decoration-color: var(--linha-forte);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  text-decoration-color: var(--ambar);
 }
 
 :focus-visible {
-  outline: 3px solid var(--foco);
-  outline-offset: 2px;
+  outline: 2px solid var(--ambar);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
 button,
@@ -83,36 +78,77 @@ select {
   color: inherit;
 }
 
-.cabecalho {
-  padding-block: 2.5rem 1.75rem;
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
-.cabecalho h1 {
+/* Moldura: gutter lateral fixo, conteúdo centrado até 76rem. */
+.moldura {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: max(1rem, env(safe-area-inset-left));
+}
+
+.barra {
+  border-bottom: 1px solid var(--linha);
+}
+
+.barra .moldura {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.75rem;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: 0.01em;
+}
+
+.marca svg {
+  color: var(--lanterna);
+  flex: none;
+}
+
+.barra p {
   margin: 0;
-  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  color: var(--nevoa);
+  font-size: 0.875rem;
 }
 
-.cabecalho p {
-  margin: 0.5rem 0 0;
-  color: var(--tinta-2);
-  max-width: 40rem;
+@media (max-width: 40rem) {
+  .barra p {
+    display: none;
+  }
 }
 
 .rodape {
-  padding-block: 2.5rem 3rem;
-  color: var(--tinta-3);
+  margin-top: 4rem;
+  border-top: 1px solid var(--linha);
+  padding-block: 2rem 3rem;
+  color: var(--nevoa);
   font-size: 0.875rem;
 }
 
 .rodape p {
-  margin: 0.25rem 0;
-  max-width: 48rem;
+  margin: 0.3rem 0;
+  max-width: 46rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     transition: none !important;
+    animation: none !important;
   }
 }

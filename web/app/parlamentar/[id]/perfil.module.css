@@ -1,0 +1,253 @@
+.pagina {
+  display: grid;
+  gap: 2.5rem;
+  padding-block: 1.5rem 4rem;
+}
+
+.carregando {
+  padding: 2rem 1rem;
+  color: var(--nevoa);
+}
+
+.voltar {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  color: var(--nevoa);
+  text-decoration: none;
+  font-size: 0.9375rem;
+}
+
+.voltar::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-left: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.voltar:hover {
+  color: var(--ambar);
+}
+
+.cabecalho {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5rem;
+  align-items: end;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--linha);
+}
+
+.cabecalho img {
+  width: 120px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: var(--raio);
+  background: var(--linha);
+  box-shadow: var(--sombra);
+}
+
+.cabecalho h1 {
+  margin: 0.15rem 0 0.35rem;
+  font-family: var(--fonte-nomes), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.1rem, 1.5rem + 2.6vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+}
+
+.cargo {
+  margin: 0;
+  color: var(--nevoa);
+}
+
+.partidoUf {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.nomeCivil {
+  margin: 0.3rem 0 0;
+  color: var(--nevoa);
+  font-size: 0.9375rem;
+}
+
+.fonte {
+  display: inline-block;
+  margin-top: 0.9rem;
+  font-weight: 700;
+  color: var(--ambar);
+  text-decoration-color: color-mix(in srgb, var(--ambar) 45%, transparent);
+}
+
+@media (max-width: 34rem) {
+  .cabecalho {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .cabecalho img {
+    width: 96px;
+    height: 128px;
+  }
+}
+
+.secao {
+  display: grid;
+  gap: 1rem;
+  max-width: 52rem;
+}
+
+.secao h2 {
+  margin: 0;
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+
+.nota {
+  margin: 0;
+  color: var(--nevoa);
+  max-width: 44rem;
+}
+
+/* Votos: lista cronológica, valor do voto à esquerda. */
+.votos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.voto {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 1.25rem;
+  padding-block: 1.1rem;
+  border-bottom: 1px solid var(--linha);
+}
+
+@media (max-width: 34rem) {
+  .voto {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+}
+
+/* Sim e Não se distinguem por forma, não por cor de juízo; o rótulo de texto vem sempre. */
+.votoValor {
+  align-self: start;
+  justify-self: start;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1.5px dashed var(--nevoa-2);
+  color: var(--poeira);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+
+.votoValor[data-voto="Sim"] {
+  border: 1.5px solid var(--poeira);
+  background: var(--poeira);
+  color: var(--ceu);
+}
+
+.votoValor[data-voto="Não"] {
+  border: 1.5px solid var(--poeira);
+}
+
+.votoCorpo {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.votoMeta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  color: var(--nevoa);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.prop {
+  color: var(--poeira);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.votoDescricao {
+  margin: 0;
+  max-width: 68ch;
+}
+
+.ementa {
+  margin: 0;
+  max-width: 68ch;
+  color: var(--nevoa);
+  font-size: 0.9375rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.votoRodape {
+  margin: 0.2rem 0 0;
+  color: var(--nevoa);
+  font-size: 0.875rem;
+}
+
+.glossario {
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  background: var(--indigo);
+  font-size: 0.9375rem;
+}
+
+.glossario dt {
+  font-weight: 700;
+}
+
+.glossario dd {
+  margin: 0;
+  color: var(--nevoa);
+}
+
+.tabelaRolagem {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela th {
+  text-align: left;
+  font-weight: 400;
+  font-size: 0.8125rem;
+  color: var(--nevoa);
+  padding: 0.4rem 1rem 0.4rem 0;
+  border-bottom: 1px solid var(--linha-forte);
+}
+
+.tabela td {
+  padding: 0.5rem 1rem 0.5rem 0;
+  border-bottom: 1px solid var(--linha);
+  white-space: nowrap;
+}
