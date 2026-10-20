@@ -10,7 +10,9 @@ export const ADSENSE_CLIENTE = bruto ? (bruto.startsWith("ca-") ? bruto : `ca-${
 /** Formato do ads.txt: pub-1234567890123456 */
 export const ADSENSE_EDITOR = ADSENSE_CLIENTE?.replace(/^ca-/, "");
 
-export const ADSENSE_BLOCO = process.env.NEXT_PUBLIC_ADSENSE_SLOT?.trim() || undefined;
+// Blocos de anúncio (também públicos). As variáveis de ambiente, se definidas, têm prioridade.
+/** Bloco "Rodapé", em todas as páginas. */
+export const ADSENSE_BLOCO = process.env.NEXT_PUBLIC_ADSENSE_SLOT?.trim() || "1175222461";
 
-/** Bloco entre seções do perfil; sem bloco próprio, usa o mesmo do rodapé. */
-export const ADSENSE_BLOCO_PERFIL = process.env.NEXT_PUBLIC_ADSENSE_SLOT_PERFIL?.trim() || ADSENSE_BLOCO;
+/** Bloco "secoes", entre seções do perfil do parlamentar. */
+export const ADSENSE_BLOCO_PERFIL = process.env.NEXT_PUBLIC_ADSENSE_SLOT_PERFIL?.trim() || "5029250729";
