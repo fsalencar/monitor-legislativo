@@ -1,6 +1,6 @@
 import { cacheDados } from "./cache";
 import { sql } from "./db";
-import { SEM_PARTIDO, type CasaId } from "./plenario";
+import { PARTIDO_NAO_INFORMADO, SEM_PARTIDO, type CasaId } from "./plenario";
 
 export type Legislatura = {
   numero: number;
@@ -128,7 +128,7 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
     sexo: p.sexo,
     foto: p.url_foto,
     urlFonte: p.url_fonte,
-    partido: atual ? (atual.sigla_partido ?? SEM_PARTIDO) : null,
+    partido: atual ? (atual.sigla_partido ?? PARTIDO_NAO_INFORMADO) : null,
     uf: atual?.uf ?? null,
     emExercicio: legs.some((l) => l.em_exercicio),
     legislaturas: legs.map((l) => ({

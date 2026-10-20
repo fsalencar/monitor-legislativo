@@ -5,7 +5,7 @@ import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { corDoPartido } from "@/lib/cores";
 import { layoutHemiciclo, RAIO_INTERNO } from "@/lib/hemiciclo";
 import { contarPartidos, ordenarCadeiras } from "@/lib/ordem";
-import { SIGLA_CASA, type Assembleia, type CasaId } from "@/lib/casas";
+import { ASSEMBLEIAS, SIGLA_CASA, type Assembleia, type CasaId } from "@/lib/casas";
 import type { Parlamentar } from "@/lib/plenario";
 import styles from "./plenario.module.css";
 import { useNomeDigitado } from "./useNomeDigitado";
@@ -19,15 +19,13 @@ const ABAS: { id: Aba; titulo: string }[] = [
   { id: "presidente", titulo: "Presidente" },
 ];
 
-// Assembleias Legislativas disponíveis (as que publicam dados abertos), na ordem do seletor.
-const ASSEMBLEIAS: { id: Assembleia; uf: string; estado: string }[] = [
-  { id: "al-sp", uf: "SP", estado: "São Paulo" },
-  { id: "al-mg", uf: "MG", estado: "Minas Gerais" },
-];
-
 // Unidades da federação com Assembleia (ou Câmara Legislativa, no DF): 26 estados + DF.
 const TOTAL_UFS = 27;
 const PERCENTUAL_ESTADOS = Math.round((ASSEMBLEIAS.length / TOTAL_UFS) * 100);
+const REGIOES = [...new Set(ASSEMBLEIAS.map((a) => a.regiao))].map((regiao) => ({
+  regiao,
+  assembleias: ASSEMBLEIAS.filter((a) => a.regiao === regiao),
+}));
 
 const ABA_INICIAL: Aba = "camara";
 
@@ -47,7 +45,7 @@ function assinarUrl(avisar: () => void) {
   return () => window.removeEventListener("popstate", avisar);
 }
 
-// ?casa= aceita camara, senado, presidente e a sigla da Assembleia (al-sp, al-mg).
+// ?casa= aceita camara, senado, presidente e a sigla da Assembleia (al-sp, al-mg...).
 function lerCasaDaUrl(): string | null {
   return new URLSearchParams(window.location.search).get("casa");
 }
@@ -123,7 +121,7 @@ export default function Plenario({
         {ABAS.map((a) => {
           const detalhe =
             a.id === "estaduais"
-              ? `${ASSEMBLEIAS.map((x) => x.uf).join(" e ")} · ${PERCENTUAL_ESTADOS}% dos estados`
+              ? `${ASSEMBLEIAS.length} estados · ${PERCENTUAL_ESTADOS}% do país`
               : a.id === "presidente"
                 ? "Mandato atual"
                 : `${casas[a.id].length} cadeiras`;
@@ -146,15 +144,22 @@ export default function Plenario({
 
       {aba === "estaduais" && (
         <div className={styles.assembleias} role="group" aria-label="Assembleia Legislativa">
-          {ASSEMBLEIAS.map((a) => (
-            <button
-              key={a.id}
-              className={styles.assembleia}
-              aria-pressed={assembleia === a.id}
-              onClick={() => escolherAssembleia(a.id)}
-            >
-              {a.estado} <span>{casas[a.id].length} cadeiras</span>
-            </button>
+          {REGIOES.map((r) => (
+            <div key={r.regiao} className={styles.regiao}>
+              <span className={styles.regiaoNome}>{r.regiao}</span>
+              <div className={styles.regiaoEstados}>
+                {r.assembleias.map((a) => (
+                  <button
+                    key={a.id}
+                    className={styles.assembleia}
+                    aria-pressed={assembleia === a.id}
+                    onClick={() => escolherAssembleia(a.id)}
+                  >
+                    {a.estado} <span>{casas[a.id].length} cadeiras</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
           <div className={styles.cobertura}>
             <p>

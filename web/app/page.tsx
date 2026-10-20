@@ -1,18 +1,15 @@
+import { CASAS, type CasaId } from "@/lib/casas";
 import { getPlenario } from "@/lib/plenario";
 import PainelPresidente from "./PainelPresidente";
 import Plenario from "./Plenario";
 
 export default async function Home() {
-  const [senado, camara, alSp, alMg] = await Promise.all([
-    getPlenario("senado"),
-    getPlenario("camara"),
-    getPlenario("al-sp"),
-    getPlenario("al-mg"),
-  ]);
+  const listas = await Promise.all(CASAS.map((c) => getPlenario(c)));
+  const casas = Object.fromEntries(CASAS.map((c, i) => [c, listas[i]])) as Record<CasaId, (typeof listas)[number]>;
 
   return (
     <main className="moldura">
-      <Plenario casas={{ senado, camara, "al-sp": alSp, "al-mg": alMg }} presidente={<PainelPresidente />} />
+      <Plenario casas={casas} presidente={<PainelPresidente />} />
     </main>
   );
 }

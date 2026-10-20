@@ -1,16 +1,40 @@
 // Casas legislativas (sem dependências de servidor: usado também no navegador).
 
-export type CasaId = "senado" | "camara" | "al-sp" | "al-mg";
-export type Assembleia = "al-sp" | "al-mg";
+// Assembleias Legislativas disponíveis (as que publicam dados abertos), por região e na ordem do seletor.
+export const ASSEMBLEIAS = [
+  { id: "al-sp", uf: "SP", estado: "São Paulo", sigla: "ALESP", regiao: "Sudeste" },
+  { id: "al-mg", uf: "MG", estado: "Minas Gerais", sigla: "ALMG", regiao: "Sudeste" },
+  { id: "al-es", uf: "ES", estado: "Espírito Santo", sigla: "ALES", regiao: "Sudeste" },
+  { id: "al-pb", uf: "PB", estado: "Paraíba", sigla: "ALPB", regiao: "Nordeste" },
+  { id: "al-pe", uf: "PE", estado: "Pernambuco", sigla: "ALEPE", regiao: "Nordeste" },
+  { id: "al-ac", uf: "AC", estado: "Acre", sigla: "ALEAC", regiao: "Norte" },
+  { id: "al-am", uf: "AM", estado: "Amazonas", sigla: "ALEAM", regiao: "Norte" },
+  { id: "al-ro", uf: "RO", estado: "Rondônia", sigla: "ALE-RO", regiao: "Norte" },
+  { id: "al-rr", uf: "RR", estado: "Roraima", sigla: "ALE-RR", regiao: "Norte" },
+  { id: "al-to", uf: "TO", estado: "Tocantins", sigla: "ALETO", regiao: "Norte" },
+] as const;
 
-export function ehAssembleia(casa: CasaId): casa is Assembleia {
-  return casa === "al-sp" || casa === "al-mg";
+export type Assembleia = (typeof ASSEMBLEIAS)[number]["id"];
+export type CasaId = "senado" | "camara" | Assembleia;
+
+export const CASAS: CasaId[] = ["senado", "camara", ...ASSEMBLEIAS.map((a) => a.id)];
+
+export function ehAssembleia(casa: string): casa is Assembleia {
+  return ASSEMBLEIAS.some((a) => a.id === casa);
 }
 
 // Nome curto de cada casa, para textos como "Página oficial na Câmara".
-export const SIGLA_CASA: Record<CasaId, { na: string; nome: string }> = {
+export const SIGLA_CASA = {
   camara: { na: "na Câmara", nome: "Câmara dos Deputados" },
   senado: { na: "no Senado", nome: "Senado Federal" },
-  "al-sp": { na: "na ALESP", nome: "Assembleia Legislativa de São Paulo" },
-  "al-mg": { na: "na ALMG", nome: "Assembleia Legislativa de Minas Gerais" },
-};
+  ...Object.fromEntries(
+    ASSEMBLEIAS.map((a) => [a.id, { na: `na ${a.sigla}`, nome: `Assembleia Legislativa ${preposicao(a.uf)} ${a.estado}` }]),
+  ),
+} as Record<CasaId, { na: string; nome: string }>;
+
+// "de São Paulo", "do Acre", "da Paraíba".
+function preposicao(uf: string): string {
+  if (["AC", "AM", "ES", "TO", "PA", "AP", "CE", "MA", "PI", "RN", "PR", "RS", "RJ", "MT", "MS", "DF"].includes(uf)) return "do";
+  if (["PB", "BA"].includes(uf)) return "da";
+  return "de";
+}

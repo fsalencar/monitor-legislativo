@@ -1,6 +1,7 @@
 import type { Parlamentar } from "./plenario";
 
-const SEM_PARTIDO = "Sem partido";
+// Sem partido e partido não informado pela fonte vão por último.
+const POR_ULTIMO = new Set(["Sem partido", "Partido não informado"]);
 
 export type ContagemPartido = { sigla: string; cadeiras: number };
 
@@ -12,7 +13,7 @@ export function contarPartidos(parlamentares: Parlamentar[]): ContagemPartido[] 
     .map(([sigla, cadeiras]) => ({ sigla, cadeiras }))
     .sort(
       (a, b) =>
-        Number(a.sigla === SEM_PARTIDO) - Number(b.sigla === SEM_PARTIDO) ||
+        Number(POR_ULTIMO.has(a.sigla)) - Number(POR_ULTIMO.has(b.sigla)) ||
         b.cadeiras - a.cadeiras ||
         a.sigla.localeCompare(b.sigla, "pt-BR"),
     );

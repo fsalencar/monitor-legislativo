@@ -17,6 +17,8 @@ export type Parlamentar = {
 };
 
 export const SEM_PARTIDO = "Sem partido";
+// A fonte não traz o partido (ex.: o SAPL do Tocantins não tem filiações cadastradas).
+export const PARTIDO_NAO_INFORMADO = "Partido não informado";
 
 export async function getPlenario(casa: CasaId): Promise<Parlamentar[]> {
   "use cache";
@@ -54,7 +56,8 @@ export async function getPlenario(casa: CasaId): Promise<Parlamentar[]> {
 }
 
 function normalizaPartido(sigla: string | null): string {
-  if (!sigla || /^s\.?\s*\/?\s*partido$/i.test(sigla)) return SEM_PARTIDO;
+  if (!sigla) return PARTIDO_NAO_INFORMADO;
+  if (/^s\.?\s*\/?\s*partido$/i.test(sigla)) return SEM_PARTIDO;
   return sigla;
 }
 

@@ -676,9 +676,28 @@
 .assembleias {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
+  align-items: flex-start;
+  gap: 1rem 1.75rem;
   margin-top: -0.5rem;
+}
+
+/* Estados agrupados por região: rótulo pequeno acima dos botões. */
+.regiao {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.regiaoNome {
+  color: var(--nevoa);
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.regiaoEstados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 /* Cobertura: quantos estados já estão disponíveis (barra neutra, sem meta). */
@@ -783,5 +802,17 @@
   .presidenteIdentidade {
     grid-template-columns: 1fr;
     align-items: start;
+  }
+}
+
+/* Celular: só o nome do estado nos botões (a contagem aparece no título da Assembleia). */
+@media (max-width: 600px) {
+  .assembleia {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.9375rem;
+  }
+
+  .assembleia span {
+    display: none;
   }
 }

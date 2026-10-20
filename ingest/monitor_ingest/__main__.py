@@ -32,7 +32,7 @@ def main() -> None:
     pres = sub.add_parser("camara-presencas", help="presença em sessões deliberativas do plenário")
     pres.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=30))
     pres.add_argument("--ate", type=date.fromisoformat, default=date.today())
-    sub.add_parser("estaduais", help="deputados estaduais em exercício (ALESP e ALMG)")
+    sub.add_parser("estaduais", help="deputados estaduais em exercício (Assembleias com dados abertos)")
     pr = sub.add_parser("presidente", help="projetos, medidas provisórias e vetos da Presidência")
     pr.add_argument("--desde", type=int, default=date.today().year, help="ano inicial (padrão: ano atual)")
     sub.add_parser("senado-mandatos", help="histórico de mandatos dos senadores em exercício")
@@ -49,7 +49,7 @@ def main() -> None:
 
     if args.cmd == "estaduais":
         with db.connect() as conn, db.execucao(conn, args.cmd) as stats:
-            stats["registros"] = estaduais.alesp(conn) + estaduais.almg(conn)
+            stats["registros"] = estaduais.todas(conn)
         print(f"estaduais: {stats['registros']} deputados")
         return
 
