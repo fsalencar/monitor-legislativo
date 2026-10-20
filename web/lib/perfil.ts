@@ -161,8 +161,9 @@ async function consultarVotos(id: number, limite: number | null): Promise<VotoRe
     from voto vo join votacao v on v.id = vo.votacao_id
     where vo.parlamentar_id = ${id}
     order by v.data_hora desc nulls last
-    ${limite === null ? sql`` : sql`limit ${limite}`}
+    limit ${limite}
   `;
+  // limit null = sem limite no Postgres.
   return rows.map((v) => ({
     votacaoId: Number(v.votacao_id),
     dataHora: v.data_hora ? v.data_hora.toISOString() : null,
