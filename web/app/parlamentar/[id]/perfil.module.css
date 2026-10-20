@@ -138,6 +138,9 @@
   color: var(--ambar);
   font-weight: 700;
   text-decoration: none;
+  background: none;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 .todos:hover {
@@ -414,6 +417,92 @@
   border-radius: 999px;
   color: var(--nevoa);
   font-size: 0.8125rem;
+}
+
+/* Resumo de desfechos (autoria) e tempo afastado: números em destaque, sem cor de juízo. */
+.desfechoResumo {
+  margin: 0;
+  font-size: 1.0625rem;
+  max-width: 60ch;
+}
+
+.desfechoResumo strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.desfechoResumo span {
+  color: var(--nevoa);
+}
+
+.projetoTopo {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+}
+
+/* Selo de desfecho: diferenciado por forma (cheio, contorno, tracejado), não por verde/vermelho. */
+.desfecho {
+  padding: 0.05rem 0.55rem;
+  border-radius: 999px;
+  border: 1px dashed var(--nevoa-2);
+  color: var(--nevoa);
+  font-size: 0.8125rem;
+}
+
+.desfecho[data-desfecho="lei"] {
+  border: 1px solid var(--poeira);
+  background: var(--poeira);
+  color: var(--ceu);
+  font-weight: 700;
+}
+
+.desfecho[data-desfecho="encerrado"] {
+  border: 1px solid var(--nevoa-2);
+}
+
+.situacaoProjeto {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--nevoa-2);
+}
+
+.maisVotos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.maisVotos p {
+  margin: 0;
+  width: 100%;
+  color: var(--nevoa);
+  font-size: 0.9375rem;
+}
+
+.botaoSecundario {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: none;
+  color: var(--poeira);
+  cursor: pointer;
+}
+
+.botaoSecundario:hover {
+  border-color: var(--nevoa-2);
+}
+
+.maisVotos button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.erro {
+  color: var(--ambar) !important;
 }
 
 /* Projetos de autoria */

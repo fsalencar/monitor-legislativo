@@ -1,4 +1,4 @@
-import type { Afastamento, Presenca, ProjetoAutoria } from "@/lib/perfil";
+import type { Afastamento, Autorias, Desfecho, Presenca } from "@/lib/perfil";
 import styles from "./perfil.module.css";
 
 const dataCurta = new Intl.DateTimeFormat("pt-BR", {
@@ -12,7 +12,17 @@ const dia = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", y
 const PRESENCA_SENADO =
   "A frequência por sessão do Senado ainda não foi carregada. Nas votações nominais acima, o registro de cada senador já indica presença, licença, missão ou ausência (veja o glossário dos votos).";
 
-export function Autoria({ casa, total, projetos }: { casa: string; total: number; projetos: ProjetoAutoria[] }) {
+const DESFECHO: Record<Desfecho, string> = {
+  lei: "Virou lei",
+  encerrado: "Arquivado, rejeitado ou retirado",
+  tramitando: "Em tramitação",
+  sem: "Situação não informada",
+};
+
+const numero = new Intl.NumberFormat("pt-BR");
+
+export function Autoria({ casa, autorias }: { casa: string; autorias: Autorias }) {
+  const { total, porDesfecho, projetos } = autorias;
   return (
     <section className={styles.secao}>
       <h2>Projetos de autoria</h2>
@@ -23,16 +33,30 @@ export function Autoria({ casa, total, projetos }: { casa: string; total: number
       ) : (
         <>
           <p className={styles.nota}>
-            {total} {total === 1 ? "projeto" : "projetos"} em que é autor ou coautor (projetos de lei, de lei
+            {numero.format(total)} {total === 1 ? "projeto" : "projetos"} em que é autor ou coautor (projetos de lei, de lei
             complementar, propostas de emenda à Constituição e outros), do mais recente ao mais antigo.
             {total > projetos.length && ` Aqui aparecem os ${projetos.length} mais recentes.`}
+          </p>
+          <p className={styles.desfechoResumo}>
+            <strong>{numero.format(porDesfecho.lei)}</strong> {porDesfecho.lei === 1 ? "virou lei" : "viraram lei"} de{" "}
+            {numero.format(total)} apresentados.{" "}
+            <span>
+              {numero.format(porDesfecho.encerrado)} arquivados, rejeitados ou retirados;{" "}
+              {numero.format(porDesfecho.tramitando)} em tramitação
+              {porDesfecho.sem > 0 && `; ${numero.format(porDesfecho.sem)} sem situação informada pela fonte`}.
+            </span>
           </p>
           <ul className={styles.projetos}>
             {projetos.map((pr) => (
               <li key={pr.url}>
-                <a href={pr.url} target="_blank" rel="noopener noreferrer" className={styles.prop}>
-                  {pr.sigla}
-                </a>
+                <p className={styles.projetoTopo}>
+                  <a href={pr.url} target="_blank" rel="noopener noreferrer" className={styles.prop}>
+                    {pr.sigla}
+                  </a>
+                  <span className={styles.desfecho} data-desfecho={pr.desfecho} title={pr.situacao ?? undefined}>
+                    {DESFECHO[pr.desfecho]}
+                  </span>
+                </p>
                 {pr.resumo ? (
                   <>
                     <p className={styles.resumo}>{pr.resumo}</p>
@@ -41,6 +65,7 @@ export function Autoria({ casa, total, projetos }: { casa: string; total: number
                 ) : (
                   pr.ementa && <p className={styles.ementa}>{pr.ementa}</p>
                 )}
+                {pr.situacao && <p className={styles.situacaoProjeto}>Situação oficial: {pr.situacao}</p>}
               </li>
             ))}
           </ul>
@@ -102,10 +127,32 @@ export function PresencaSessoes({ casa, presenca }: { casa: string; presenca: Pr
   );
 }
 
-export function Afastamentos({ casa, afastamentos }: { casa: string; afastamentos: Afastamento[] }) {
+export function Afastamentos({
+  casa,
+  afastamentos,
+  tempoMandatoAtual,
+}: {
+  casa: string;
+  afastamentos: Afastamento[];
+  tempoMandatoAtual: { diasAfastado: number; diasDecorridos: number } | null;
+}) {
   return (
     <section className={styles.secao}>
       <h2>Afastamentos e licenças</h2>
+      {tempoMandatoAtual && (
+        <p className={styles.desfechoResumo}>
+          No mandato atual:{" "}
+          <strong>
+            {tempoMandatoAtual.diasAfastado === 0
+              ? "nenhum dia afastado"
+              : `${numero.format(tempoMandatoAtual.diasAfastado)} ${tempoMandatoAtual.diasAfastado === 1 ? "dia" : "dias"} afastado`}
+          </strong>{" "}
+          <span>
+            de {numero.format(tempoMandatoAtual.diasDecorridos)} dias de mandato até hoje. Nos mandatos anteriores, o
+            tempo afastado aparece na tabela de legislaturas abaixo.
+          </span>
+        </p>
+      )}
       {afastamentos.length === 0 ? (
         <p className={styles.nota}>
           Nenhum afastamento ou licença registrado {casa === "senado" ? "pelo Senado" : "no histórico da Câmara"}.

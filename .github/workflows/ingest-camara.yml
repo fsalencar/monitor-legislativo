@@ -1,4 +1,4 @@
-name: Ingestão Câmara
+name: Ingestão Câmara e Senado
 
 on:
   schedule:
@@ -15,7 +15,7 @@ concurrency: ingest-camara
 jobs:
   deputados:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     defaults:
@@ -48,6 +48,21 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: python -m monitor_ingest camara-presencas
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest camara-situacoes --limite 3000
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest senado-mandatos
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest senado-votacoes
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest senado-autorias
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest senado-licencas
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: python -m monitor_ingest resumos --limite 150 --minutos 20

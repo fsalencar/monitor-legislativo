@@ -26,6 +26,8 @@ def main() -> None:
     sub.add_parser("senado-senadores", help="senadores em exercício e seus mandatos")
     sub.add_parser("camara-autorias", help="projetos de autoria dos deputados da legislatura atual")
     sub.add_parser("camara-afastamentos", help="licenças e afastamentos (histórico de situação)")
+    sit = sub.add_parser("camara-situacoes", help="situação atual dos projetos (sem situação ou desatualizados)")
+    sit.add_argument("--limite", type=int, default=3000)
     pres = sub.add_parser("camara-presencas", help="presença em sessões deliberativas do plenário")
     pres.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=30))
     pres.add_argument("--ate", type=date.fromisoformat, default=date.today())
@@ -40,6 +42,12 @@ def main() -> None:
     res.add_argument("--dry-run", action="store_true", help="só mostra os resumos, não grava")
     res.add_argument("--minutos", type=float, help="tempo máximo; para sem erro ao esgotar")
     args = p.parse_args()
+
+    if args.cmd == "camara-situacoes":
+        with db.connect() as conn, db.execucao(conn, args.cmd) as stats:
+            stats["registros"] = camara_atividade.situacoes(conn, CamaraClient(), args.limite)
+        print(f"{args.cmd}: {stats['registros']} registros")
+        return
 
     if args.cmd in ("camara-autorias", "camara-afastamentos", "camara-presencas"):
         t0 = time.monotonic()

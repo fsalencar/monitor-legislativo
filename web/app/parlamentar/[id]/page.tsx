@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Afastamentos, Autoria, PresencaSessoes } from "./atividade";
 import {
+  type TempoAfastado,
   getAfastamentos,
+  getTempoAfastado,
+  VOTOS_POR_PAGINA,
   getAutorias,
   getCoberturaVotosCompleta,
   getPresenca,
@@ -14,7 +17,8 @@ import {
   type Legislatura,
   type Perfil,
 } from "@/lib/perfil";
-import { cargo, ListaVotos, Localizador } from "./componentes";
+import { cargo, Localizador } from "./componentes";
+import { VotosLista } from "./votos";
 import styles from "./perfil.module.css";
 
 export function generateStaticParams() {
@@ -40,11 +44,12 @@ export default function Page(props: PageProps<"/parlamentar/[id]">) {
 async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["params"] }) {
   const id = idDoParametro((await params).id);
   if (!id) notFound();
-  const [p, autoria, presenca, afastamentos] = await Promise.all([
+  const [p, autoria, presenca, afastamentos, tempoAfastado] = await Promise.all([
     getPerfil(id),
     getAutorias(id),
     getPresenca(id),
     getAfastamentos(id),
+    getTempoAfastado(id),
   ]);
   if (!p) notFound();
   const completa = await getCoberturaVotosCompleta(p.casa);
@@ -59,10 +64,10 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
         <div className={styles.principal}>
           <Cabecalho p={p} />
           <Votos p={p} cobertura={textoCobertura(completa)} />
-          <Autoria casa={p.casa} total={autoria.total} projetos={autoria.projetos} />
+          <Autoria casa={p.casa} autorias={autoria} />
           <PresencaSessoes casa={p.casa} presenca={presenca} />
-          <Afastamentos casa={p.casa} afastamentos={afastamentos} />
-          <Mandatos p={p} />
+          <Afastamentos casa={p.casa} afastamentos={afastamentos} tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)} />
+          <Mandatos p={p} tempoAfastado={tempoAfastado} />
         </div>
 
         {p.emExercicio && (
@@ -103,23 +108,47 @@ function Cabecalho({ p }: { p: Perfil }) {
 }
 
 function Votos({ p, cobertura }: { p: Perfil; cobertura: string }) {
-  const truncado = p.votos.length < p.totalVotos;
   return (
     <section className={styles.secao}>
       <h2>Votos em votações nominais</h2>
       <p className={styles.nota}>
         {p.totalVotos === 0
           ? `Nenhum voto nominal registrado ${cobertura}.`
-          : `${truncado ? `Os ${p.votos.length} mais recentes de ` : ""}${p.totalVotos} votos registrados ${cobertura}. Votações simbólicas não registram voto individual e não aparecem aqui.`}
+          : `${p.totalVotos} votos registrados ${cobertura}, do mais recente ao mais antigo. Votações simbólicas não registram voto individual e não aparecem aqui.`}
       </p>
-      {p.votos.length > 0 && <ListaVotos votos={p.votos} partidoAtual={p.partido} />}
-      {truncado && (
-        <Link href={`/parlamentar/${p.id}/votos`} className={styles.todos}>
-          Ver todos os {p.totalVotos} votos
-        </Link>
+      {p.votos.length > 0 && (
+        <VotosLista
+          id={p.id}
+          iniciais={p.votos}
+          total={p.totalVotos}
+          porPagina={VOTOS_POR_PAGINA}
+          partidoAtual={p.partido}
+        />
       )}
     </section>
   );
+}
+
+const numero = new Intl.NumberFormat("pt-BR");
+
+function textoDias(t: TempoAfastado | undefined): string {
+  if (!t || t.diasDecorridos === 0) return "—";
+  return t.diasAfastado === 0
+    ? "nenhum dia"
+    : `${numero.format(t.diasAfastado)} de ${numero.format(t.diasDecorridos)} dias`;
+}
+
+// Soma das legislaturas do mandato atual (Câmara: a legislatura em curso; Senado: as duas do mandato).
+function tempoMandatoAtual(p: Perfil, tempo: TempoAfastado[]): { diasAfastado: number; diasDecorridos: number } | null {
+  const legs = p.casa === "senado"
+    ? mandatoAtualSenado(p.legislaturas).map((l) => l.numero)
+    : p.legislaturas.filter((l) => l.situacao === "em curso").map((l) => l.numero);
+  const doMandato = tempo.filter((t) => legs.includes(t.legislatura));
+  if (!doMandato.length) return null;
+  return {
+    diasAfastado: doMandato.reduce((a, t) => a + t.diasAfastado, 0),
+    diasDecorridos: doMandato.reduce((a, t) => a + t.diasDecorridos, 0),
+  };
 }
 
 const INICIO: Record<Legislatura["situacao"], string> = {
@@ -139,7 +168,8 @@ function mandatoAtualSenado(legs: Legislatura[]): Legislatura[] {
   return par.sort((a, b) => a.numero - b.numero);
 }
 
-function Mandatos({ p }: { p: Perfil }) {
+function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastado[] }) {
+  const dias = new Map(tempoAfastado.map((t) => [t.legislatura, t]));
   const senado = p.casa === "senado";
   const doMandato = senado ? mandatoAtualSenado(p.legislaturas) : [];
   return (
@@ -167,6 +197,7 @@ function Mandatos({ p }: { p: Perfil }) {
               <th scope="col">Legislatura</th>
               <th scope="col">Partido</th>
               <th scope="col">UF</th>
+              <th scope="col">Tempo afastado</th>
             </tr>
           </thead>
           <tbody>
@@ -178,6 +209,7 @@ function Mandatos({ p }: { p: Perfil }) {
                 </td>
                 <td>{l.partido}</td>
                 <td>{l.uf}</td>
+                <td>{l.situacao === "futura" ? "—" : textoDias(dias.get(l.numero))}</td>
               </tr>
             ))}
           </tbody>

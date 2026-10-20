@@ -153,6 +153,8 @@ def gravar_mes(conn: psycopg.Connection, m: Mes) -> int:
         linhas = {}
         for vid, vs in m.votos.items():
             for v in vs:
+                if not v.get("tipoVoto"):
+                    continue  # a fonte às vezes manda o registro sem o valor do voto
                 d = v["deputado_"]
                 linhas[(vot[vid], parl[str(d["id"])])] = (
                     vot[vid], parl[str(d["id"])], v["tipoVoto"], d.get("siglaPartido"), d.get("siglaUf"))

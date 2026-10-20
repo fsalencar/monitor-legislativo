@@ -52,7 +52,8 @@ export type Perfil = {
   totalVotos: number;
 };
 
-const LIMITE_VOTOS = 40;
+// Votos que vêm prontos no perfil; os demais são buscados sob demanda (mostrar mais / todos).
+export const VOTOS_POR_PAGINA = 10;
 
 // O cache components exige ao menos um parâmetro no build. Usamos um id que não existe e é
 // recusado sem consultar o banco: o build não depende da conexão, e cada perfil é gerado na
@@ -110,7 +111,7 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
     order by m.legislatura desc
   `;
 
-  const votos = await consultarVotos(id, LIMITE_VOTOS);
+  const votos = await consultarVotos(id, VOTOS_POR_PAGINA, 0);
 
   const [{ total }] = await sql<{ total: string }[]>`
     select count(*) as total from voto where parlamentar_id = ${id}
@@ -173,32 +174,99 @@ export function textoCobertura(completa: boolean): string {
     : "até agora (o histórico desde fevereiro de 2023 ainda está sendo carregado)";
 }
 
+// Desfecho do projeto a partir da situação oficial (texto da fonte, Câmara ou Senado):
+// lei = virou norma jurídica; encerrado = arquivado, rejeitado, prejudicado, retirado, vetado...;
+// tramitando = qualquer outra situação; sem = a fonte não informou.
+export type Desfecho = "lei" | "encerrado" | "tramitando" | "sem";
+
+const DESFECHO_SQL = sql`
+  case
+    when pr.situacao ilike 'transformad% em norma%' then 'lei'
+    when pr.situacao ilike any (array['arquivad%', 'rejeitad%', 'prejudicad%', 'retirad%', 'perdeu a efic%',
+                                      'vetad%', 'devolvid%', 'tramitação encerrada%', 'transformad% em indica%',
+                                      'aguardando despacho de arquivamento%']) then 'encerrado'
+    when pr.situacao is null then 'sem'
+    else 'tramitando'
+  end`;
+
 export type ProjetoAutoria = {
   sigla: string;
   ementa: string | null;
   resumo: string | null;
+  situacao: string | null;
+  desfecho: Desfecho;
   url: string;
 };
 
-const LIMITE_AUTORIAS = 15;
+export type Autorias = {
+  total: number;
+  porDesfecho: Record<Desfecho, number>;
+  projetos: ProjetoAutoria[];
+};
 
-// Projetos (tipos principais) em que o parlamentar é autor ou coautor, dos mais recentes aos mais antigos.
-export async function getAutorias(id: number): Promise<{ total: number; projetos: ProjetoAutoria[] }> {
+const LIMITE_AUTORIAS = 15;
+const TIPOS_PROJETO = ["PL", "PLS", "PLP", "PEC", "MPV", "PLV", "PDL", "PDC", "PDS", "PRC", "PRS", "PLN"];
+
+// Projetos em que o parlamentar é autor ou coautor, dos mais recentes aos mais antigos,
+// com a contagem por desfecho sobre todos eles.
+export async function getAutorias(id: number): Promise<Autorias> {
   "use cache";
   cacheLife("hours");
-  const rows = await sql<{ sigla: string; ementa: string | null; resumo: string | null; url: string; total: string }[]>`
-    select pr.sigla_tipo || ' ' || pr.numero || '/' || pr.ano as sigla, pr.ementa,
-           pr.resumo_simples as resumo, pr.url_fonte as url, count(*) over () as total
+  const contagem = await sql<{ desfecho: Desfecho; n: string }[]>`
+    select ${DESFECHO_SQL} as desfecho, count(*) as n
     from autoria a join proposicao pr on pr.id = a.proposicao_id
-    where a.parlamentar_id = ${id}
-      and pr.sigla_tipo in ('PL', 'PLP', 'PEC', 'MPV', 'PLV', 'PDL', 'PDC', 'PRC', 'PLN')
+    where a.parlamentar_id = ${id} and pr.sigla_tipo = any(${TIPOS_PROJETO})
+    group by 1
+  `;
+  const rows = await sql<ProjetoAutoria[]>`
+    select pr.sigla_tipo || ' ' || pr.numero || '/' || pr.ano as sigla, pr.ementa,
+           pr.resumo_simples as resumo, pr.situacao, ${DESFECHO_SQL} as desfecho, pr.url_fonte as url
+    from autoria a join proposicao pr on pr.id = a.proposicao_id
+    where a.parlamentar_id = ${id} and pr.sigla_tipo = any(${TIPOS_PROJETO})
     order by pr.ano desc nulls last, pr.numero desc nulls last
     limit ${LIMITE_AUTORIAS}
   `;
+  const porDesfecho: Record<Desfecho, number> = { lei: 0, encerrado: 0, tramitando: 0, sem: 0 };
+  for (const c of contagem) porDesfecho[c.desfecho] = Number(c.n);
   return {
-    total: rows.length ? Number(rows[0].total) : 0,
-    projetos: rows.map(({ sigla, ementa, resumo, url }) => ({ sigla, ementa, resumo, url })),
+    total: Object.values(porDesfecho).reduce((a, b) => a + b, 0),
+    porDesfecho,
+    projetos: rows.map((r) => ({ ...r })),
   };
+}
+
+export type TempoAfastado = { legislatura: number; diasAfastado: number; diasDecorridos: number };
+
+// Dias afastado em cada legislatura com mandato (até hoje na legislatura em curso). Períodos que se
+// sobrepõem são unidos antes de contar. Câmara: a data de fim é o dia do retorno (não conta);
+// Senado: a data de fim é o último dia da licença (conta).
+export async function getTempoAfastado(id: number): Promise<TempoAfastado[]> {
+  "use cache";
+  cacheLife("hours");
+  const rows = await sql<{ legislatura: number; dias_afastado: number; dias_decorridos: number }[]>`
+    with af as (
+      select range_agg(daterange(a.data_inicio,
+               greatest(a.data_inicio + 1,
+                        coalesce(a.data_fim + case when p.casa_id = 'senado' then 1 else 0 end, current_date + 1)),
+               '[)')) as periodos
+      from afastamento a join parlamentar p on p.id = a.parlamentar_id
+      where a.parlamentar_id = ${id}
+    )
+    select m.legislatura,
+           coalesce((select sum(upper(r) - lower(r))::int
+                     from unnest(af.periodos * datemultirange(
+                            daterange(l.data_inicio, least(l.data_fim, current_date) + 1, '[)'))) r), 0) as dias_afastado,
+           greatest(least(l.data_fim, current_date) - l.data_inicio + 1, 0) as dias_decorridos
+    from mandato m
+    join legislatura l on l.casa_id = m.casa_id and l.numero = m.legislatura
+    cross join af
+    where m.parlamentar_id = ${id}
+  `;
+  return rows.map((r) => ({
+    legislatura: r.legislatura,
+    diasAfastado: Number(r.dias_afastado),
+    diasDecorridos: Number(r.dias_decorridos),
+  }));
 }
 
 export type Presenca = {
@@ -254,13 +322,14 @@ export async function getAfastamentos(id: number): Promise<Afastamento[]> {
 }
 
 // Todos os votos nominais do parlamentar, do mais recente ao mais antigo.
-export async function getTodosVotos(id: number): Promise<VotoRegistrado[]> {
+// Página de votos a partir de `inicio`; `quantos` null traz todos os restantes.
+export async function getVotosPagina(id: number, inicio: number, quantos: number | null): Promise<VotoRegistrado[]> {
   "use cache";
   cacheLife("hours");
-  return consultarVotos(id, null);
+  return consultarVotos(id, quantos, inicio);
 }
 
-async function consultarVotos(id: number, limite: number | null): Promise<VotoRegistrado[]> {
+async function consultarVotos(id: number, limite: number | null, inicio: number): Promise<VotoRegistrado[]> {
   const rows = await sql<
     {
       votacao_id: string;
@@ -286,8 +355,8 @@ async function consultarVotos(id: number, limite: number | null): Promise<VotoRe
              where vp.votacao_id = v.id) as proposicoes
     from voto vo join votacao v on v.id = vo.votacao_id
     where vo.parlamentar_id = ${id}
-    order by v.data_hora desc nulls last
-    limit ${limite}
+    order by v.data_hora desc nulls last, v.id desc
+    limit ${limite} offset ${inicio}
   `;
   // limit null = sem limite no Postgres.
   return rows.map((v) => ({

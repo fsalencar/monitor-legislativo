@@ -72,6 +72,39 @@ def autorias(conn: psycopg.Connection, api: CamaraClient) -> int:
     return n
 
 
+# ---------- Situação das proposições ----------
+
+def situacoes(conn: psycopg.Connection, api: CamaraClient, limite: int, dias: int = 7) -> int:
+    """Busca a situação atual (e temas) dos projetos da Câmara sem situação ou não atualizados há `dias`.
+
+    A listagem por autor não traz a situação; o detalhe de cada proposição traz.
+    """
+    pendentes = conn.execute(
+        """select id, id_fonte from proposicao
+           where casa_id = %s and sigla_tipo = any(%s)
+             and (situacao is null or atualizado_em < now() - make_interval(days => %s))
+           order by situacao is not null, atualizado_em limit %s""",
+        (CASA, list(TIPOS), dias, limite),
+    ).fetchall()
+    conn.commit()
+    n = 0
+    for i in range(0, len(pendentes), 200):
+        lote = pendentes[i:i + 200]
+        detalhes = api.get_many([f"/proposicoes/{fonte}" for _, fonte in lote], ignorar_404=True)
+        linhas = [((d.get("statusProposicao") or {}).get("descricaoSituacao"), d.get("keywords") or None,
+                   d.get("urlInteiroTeor"), pid)
+                  for (pid, _), d in zip(lote, detalhes) if d]
+        with conn.transaction(), conn.cursor() as cur:
+            cur.executemany(
+                """update proposicao set situacao = coalesce(%s, situacao),
+                     palavras_chave = coalesce(%s, palavras_chave),
+                     url_inteiro_teor = coalesce(%s, url_inteiro_teor), atualizado_em = now()
+                   where id = %s""", linhas)
+        n += len(linhas)
+        print(f"  situações: {i + len(lote)}/{len(pendentes)}", flush=True)
+    return n
+
+
 # ---------- Afastamentos ----------
 
 def _eh_saida(item: dict) -> bool:
