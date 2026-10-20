@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   title: "Monitor Legislativo",
   description:
     "Quem ocupa cada cadeira na Câmara dos Deputados e no Senado Federal, e como votou, com dados das fontes oficiais.",
+  // Verificação do site no AdSense (meta tag google-adsense-account).
+  ...(ADSENSE && { other: { "google-adsense-account": ADSENSE } }),
 };
 
 export const viewport: Viewport = {
