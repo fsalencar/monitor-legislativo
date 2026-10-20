@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Libre_Caslon_Text } from "next/font/google";
 import Link from "next/link";
-import Script from "next/script";
 import Anuncio from "./Anuncio";
 import Rodape from "./Rodape";
 import { ADSENSE_CLIENTE as ADSENSE } from "@/lib/adsense";
@@ -37,6 +36,17 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="pt-BR" className={`${ui.variable} ${nomes.variable}`}>
+      <head>
+        {/* Tag do AdSense como o Google recomenda: <script> simples no <head> (o componente Script
+            do Next acrescenta data-nscript, que o AdSense não aceita). */}
+        {ADSENSE && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}`}
+            crossOrigin="anonymous"
+          />
+        )}
+      </head>
       <body>
         <header className="barra">
           <div className="moldura">
@@ -55,14 +65,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {children}
         <Anuncio />
         <Rodape />
-        {ADSENSE && (
-          <Script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-        )}
       </body>
     </html>
   );
