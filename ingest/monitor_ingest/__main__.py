@@ -6,7 +6,7 @@ from datetime import date, timedelta
 
 from . import db
 from .camara import CamaraClient
-from .jobs import camara_deputados, camara_votacoes
+from .jobs import camara_deputados, camara_votacoes, senado_senadores
 
 
 def main() -> None:
@@ -22,7 +22,16 @@ def main() -> None:
                      help="AAAA-MM-DD (padrão: últimos 30 dias)")
     vot.add_argument("--ate", type=date.fromisoformat, default=date.today())
     vot.add_argument("--dry-run", action="store_true", help="só coleta, não grava")
+    sub.add_parser("senado-senadores", help="senadores em exercício e seus mandatos")
     args = p.parse_args()
+
+    if args.cmd == "senado-senadores":
+        senadores = senado_senadores.coletar()
+        print(f"{len(senadores)} senadores em exercício")
+        with db.connect() as conn, db.execucao(conn, "senado-senadores") as stats:
+            stats["registros"] = senado_senadores.gravar(conn, senadores)
+        print(f"gravados {stats['registros']} registros")
+        return
 
     if args.cmd == "migrate":
         aplicadas = db.migrate()
