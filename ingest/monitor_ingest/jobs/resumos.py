@@ -114,11 +114,16 @@ def resumir(client: genai.Client, item: tuple, tentativas: int = 4) -> str | Non
     return None
 
 
-def gerar(conn: psycopg.Connection, limite: int, gravar: bool = True) -> list[tuple]:
+def gerar(conn: psycopg.Connection, limite: int, gravar: bool = True, minutos: float | None = None) -> list[tuple]:
+    """Gera até `limite` resumos; com `minutos`, para sem erro quando o tempo acaba."""
+    prazo = time.monotonic() + minutos * 60 if minutos else None
     itens = completar_temas(conn, CamaraClient(), pendentes(conn, limite), gravar)
     client = genai.Client()  # lê GEMINI_API_KEY do ambiente
     feitos = []
     for n, item in enumerate(itens):
+        if prazo and time.monotonic() > prazo:
+            print(f"tempo esgotado após {len(feitos)} resumos; continua na próxima execução")
+            break
         if n:
             time.sleep(INTERVALO)
         try:

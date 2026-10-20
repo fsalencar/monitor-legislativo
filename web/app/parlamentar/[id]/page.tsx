@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { Afastamentos, Autoria, PresencaSessoes } from "./atividade";
 import {
+  getAfastamentos,
+  getAutorias,
   getCoberturaVotosCompleta,
+  getPresenca,
   idDoParametro,
   PARAMS_DE_BUILD,
   getPerfil,
@@ -36,7 +40,13 @@ export default function Page(props: PageProps<"/parlamentar/[id]">) {
 async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["params"] }) {
   const id = idDoParametro((await params).id);
   if (!id) notFound();
-  const [p, completa] = await Promise.all([getPerfil(id), getCoberturaVotosCompleta()]);
+  const [p, completa, autoria, presenca, afastamentos] = await Promise.all([
+    getPerfil(id),
+    getCoberturaVotosCompleta(),
+    getAutorias(id),
+    getPresenca(id),
+    getAfastamentos(id),
+  ]);
   if (!p) notFound();
 
   return (
@@ -49,15 +59,10 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
         <div className={styles.principal}>
           <Cabecalho p={p} />
           <Votos p={p} cobertura={textoCobertura(completa)} />
+          <Autoria casa={p.casa} total={autoria.total} projetos={autoria.projetos} />
+          <PresencaSessoes casa={p.casa} presenca={presenca} />
+          <Afastamentos casa={p.casa} afastamentos={afastamentos} />
           <Mandatos p={p} />
-          <section className={styles.secao}>
-            <h2>Projetos de autoria</h2>
-            <p className={styles.nota}>Em construção. Por enquanto, consulte a lista completa na página oficial.</p>
-          </section>
-          <section className={styles.secao}>
-            <h2>Presença em sessões e afastamentos</h2>
-            <p className={styles.nota}>Em construção.</p>
-          </section>
         </div>
 
         {p.emExercicio && (

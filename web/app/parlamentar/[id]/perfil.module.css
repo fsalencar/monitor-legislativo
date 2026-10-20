@@ -416,6 +416,111 @@
   font-size: 0.8125rem;
 }
 
+/* Projetos de autoria */
+.projetos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.projetos li {
+  display: grid;
+  gap: 0.3rem;
+  padding-block: 0.85rem;
+  border-bottom: 1px solid var(--linha);
+  max-width: 68ch;
+}
+
+/* Presença: três contagens com o mesmo peso visual (sem cor de juízo). */
+.contagem {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--linha);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  overflow: hidden;
+}
+
+.contagem div {
+  display: grid;
+  align-content: start;
+  gap: 0.2rem;
+  padding: 0.9rem 1rem;
+  background: var(--indigo);
+}
+
+.contagem dt {
+  font-size: 0.875rem;
+  color: var(--nevoa);
+}
+
+.contagem dd {
+  margin: 0;
+  order: -1;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 34rem) {
+  .contagem {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detalhes summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding-block: 0.4rem;
+}
+
+.detalhes summary:hover {
+  color: var(--ambar);
+}
+
+.faltas,
+.afastamentos {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--linha);
+  font-size: 0.9375rem;
+}
+
+.faltas li,
+.afastamentos li {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.2rem 1rem;
+  padding-block: 0.55rem;
+  border-bottom: 1px solid var(--linha);
+}
+
+.faltas li {
+  grid-template-columns: 9rem 11rem 1fr;
+}
+
+.faltas time,
+.periodo {
+  color: var(--nevoa);
+  font-variant-numeric: tabular-nums;
+}
+
+.justificativa {
+  color: var(--nevoa);
+}
+
+@media (max-width: 34rem) {
+  .faltas li,
+  .afastamentos li {
+    grid-template-columns: 1fr;
+  }
+}
+
 .tabelaRolagem {
   overflow-x: auto;
 }

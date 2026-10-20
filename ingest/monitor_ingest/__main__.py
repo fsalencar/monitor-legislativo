@@ -6,7 +6,7 @@ from datetime import date, timedelta
 
 from . import db
 from .camara import CamaraClient
-from .jobs import camara_deputados, camara_votacoes, resumos, senado_senadores
+from .jobs import camara_atividade, camara_deputados, camara_votacoes, resumos, senado_senadores
 
 
 def main() -> None:
@@ -23,10 +23,28 @@ def main() -> None:
     vot.add_argument("--ate", type=date.fromisoformat, default=date.today())
     vot.add_argument("--dry-run", action="store_true", help="só coleta, não grava")
     sub.add_parser("senado-senadores", help="senadores em exercício e seus mandatos")
+    sub.add_parser("camara-autorias", help="projetos de autoria dos deputados da legislatura atual")
+    sub.add_parser("camara-afastamentos", help="licenças e afastamentos (histórico de situação)")
+    pres = sub.add_parser("camara-presencas", help="presença em sessões deliberativas do plenário")
+    pres.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=30))
+    pres.add_argument("--ate", type=date.fromisoformat, default=date.today())
     res = sub.add_parser("resumos", help="resumo em linguagem simples (IA) das proposições principais")
     res.add_argument("--limite", type=int, default=200, help="máximo de proposições nesta execução")
     res.add_argument("--dry-run", action="store_true", help="só mostra os resumos, não grava")
+    res.add_argument("--minutos", type=float, help="tempo máximo; para sem erro ao esgotar")
     args = p.parse_args()
+
+    if args.cmd in ("camara-autorias", "camara-afastamentos", "camara-presencas"):
+        t0 = time.monotonic()
+        with db.connect() as conn, db.execucao(conn, args.cmd) as stats:
+            if args.cmd == "camara-autorias":
+                stats["registros"] = camara_atividade.autorias(conn, CamaraClient())
+            elif args.cmd == "camara-afastamentos":
+                stats["registros"] = camara_atividade.afastamentos(conn, CamaraClient())
+            else:
+                stats["registros"] = camara_atividade.presencas(conn, args.desde, args.ate)
+        print(f"{args.cmd}: {stats['registros']} registros ({time.monotonic() - t0:.0f}s)")
+        return
 
     if args.cmd == "resumos":
         with db.connect() as conn:
@@ -35,7 +53,7 @@ def main() -> None:
                     print(f"\n{item[2]} {item[3]}/{item[4]}\n  ementa: {item[5]}\n  resumo: {resumo}")
                 return
             with db.execucao(conn, "resumos") as stats:
-                stats["registros"] = len(resumos.gerar(conn, args.limite))
+                stats["registros"] = len(resumos.gerar(conn, args.limite, minutos=args.minutos))
         print(f"gerados {stats['registros']} resumos")
         return
 

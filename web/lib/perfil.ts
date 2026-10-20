@@ -165,6 +165,86 @@ export function textoCobertura(completa: boolean): string {
     : "até agora (o histórico desde fevereiro de 2023 ainda está sendo carregado)";
 }
 
+export type ProjetoAutoria = {
+  sigla: string;
+  ementa: string | null;
+  resumo: string | null;
+  url: string;
+};
+
+const LIMITE_AUTORIAS = 15;
+
+// Projetos (tipos principais) em que o parlamentar é autor ou coautor, dos mais recentes aos mais antigos.
+export async function getAutorias(id: number): Promise<{ total: number; projetos: ProjetoAutoria[] }> {
+  "use cache";
+  cacheLife("hours");
+  const rows = await sql<{ sigla: string; ementa: string | null; resumo: string | null; url: string; total: string }[]>`
+    select pr.sigla_tipo || ' ' || pr.numero || '/' || pr.ano as sigla, pr.ementa,
+           pr.resumo_simples as resumo, pr.url_fonte as url, count(*) over () as total
+    from autoria a join proposicao pr on pr.id = a.proposicao_id
+    where a.parlamentar_id = ${id}
+      and pr.sigla_tipo in ('PL', 'PLP', 'PEC', 'MPV', 'PLV', 'PDL', 'PDC', 'PRC', 'PLN')
+    order by pr.ano desc nulls last, pr.numero desc nulls last
+    limit ${LIMITE_AUTORIAS}
+  `;
+  return {
+    total: rows.length ? Number(rows[0].total) : 0,
+    projetos: rows.map(({ sigla, ementa, resumo, url }) => ({ sigla, ementa, resumo, url })),
+  };
+}
+
+export type Presenca = {
+  sessoes: number;
+  presencas: number;
+  ausenciasJustificadas: number;
+  ausencias: number;
+  primeiraSessao: string | null;
+  // Ausências (com ou sem justificativa), da mais recente à mais antiga.
+  faltas: { data: string; sessao: string; situacao: string; justificativa: string | null }[];
+};
+
+export async function getPresenca(id: number): Promise<Presenca> {
+  "use cache";
+  cacheLife("hours");
+  const [c] = await sql<{ sessoes: string; presencas: string; justificadas: string; ausencias: string; primeira: Date | null }[]>`
+    select count(*) as sessoes,
+           count(*) filter (where pe.situacao = 'Presença') as presencas,
+           count(*) filter (where pe.situacao = 'Ausência justificada') as justificadas,
+           count(*) filter (where pe.situacao = 'Ausência') as ausencias,
+           min(s.data_inicio) as primeira
+    from presenca pe join sessao s on s.id = pe.sessao_id
+    where pe.parlamentar_id = ${id}
+  `;
+  const faltas = await sql<{ data: Date; sessao: string; situacao: string; justificativa: string | null }[]>`
+    select s.data_inicio as data, s.id_fonte as sessao, pe.situacao, pe.justificativa
+    from presenca pe join sessao s on s.id = pe.sessao_id
+    where pe.parlamentar_id = ${id} and pe.situacao <> 'Presença'
+    order by s.data_inicio desc
+    limit 30
+  `;
+  return {
+    sessoes: Number(c.sessoes),
+    presencas: Number(c.presencas),
+    ausenciasJustificadas: Number(c.justificadas),
+    ausencias: Number(c.ausencias),
+    primeiraSessao: c.primeira ? c.primeira.toISOString() : null,
+    faltas: faltas.map((f) => ({ ...f, data: f.data.toISOString() })),
+  };
+}
+
+export type Afastamento = { inicio: string; fim: string | null; motivo: string | null; url: string };
+
+export async function getAfastamentos(id: number): Promise<Afastamento[]> {
+  "use cache";
+  cacheLife("hours");
+  const rows = await sql<{ data_inicio: Date; data_fim: Date | null; motivo: string | null; url_fonte: string }[]>`
+    select data_inicio, data_fim, motivo, url_fonte from afastamento
+    where parlamentar_id = ${id} order by data_inicio desc
+  `;
+  const iso = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
+  return rows.map((r) => ({ inicio: iso(r.data_inicio)!, fim: iso(r.data_fim), motivo: r.motivo, url: r.url_fonte }));
+}
+
 // Todos os votos nominais do parlamentar, do mais recente ao mais antigo.
 export async function getTodosVotos(id: number): Promise<VotoRegistrado[]> {
   "use cache";
