@@ -1,4 +1,5 @@
 import { getPresidente, ITENS_POR_PAGINA, PRESIDENTE } from "@/lib/presidente";
+import Anuncio from "./Anuncio";
 import { ListaFiltrada, type Filtro } from "./parlamentar/[id]/projetos";
 import p from "./parlamentar/[id]/perfil.module.css";
 import styles from "./plenario.module.css";
@@ -34,14 +35,29 @@ export default async function PainelPresidente() {
     <div className={styles.presidente}>
       <header className={styles.presidenteTopo}>
         <h1 className={styles.titulo}>Presidência da República</h1>
-        <p className={styles.presidenteNome}>{PRESIDENTE.nome}</p>
-        <p className={styles.resumo}>
-          {PRESIDENTE.partido}, mandato de {dia.format(new Date(PRESIDENTE.inicio))} a{" "}
-          {dia.format(new Date(PRESIDENTE.fim))}.{" "}
-          <a href={PRESIDENTE.urlOficial} target="_blank" rel="noopener noreferrer">
-            Página oficial
-          </a>
-        </p>
+        <div className={styles.presidenteIdentidade}>
+          <figure className={styles.presidenteFoto}>
+            {/* Retrato oficial (CC BY 2.0): o crédito acompanha a foto. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={PRESIDENTE.foto} alt={`Foto oficial de ${PRESIDENTE.nome}`} width={120} height={153} />
+            <figcaption>
+              Foto:{" "}
+              <a href={PRESIDENTE.urlFoto} target="_blank" rel="noopener noreferrer">
+                {PRESIDENTE.creditoFoto}
+              </a>
+            </figcaption>
+          </figure>
+          <div>
+            <p className={styles.presidenteNome}>{PRESIDENTE.nome}</p>
+            <p className={styles.resumo}>
+              {PRESIDENTE.partido}, mandato de {dia.format(new Date(PRESIDENTE.inicio))} a{" "}
+              {dia.format(new Date(PRESIDENTE.fim))}.{" "}
+              <a href={PRESIDENTE.urlOficial} target="_blank" rel="noopener noreferrer">
+                Página oficial
+              </a>
+            </p>
+          </div>
+        </div>
         <p className={styles.presidenteNota}>
           O presidente não vota no Congresso. Aqui aparece o que a Presidência enviou ao Congresso Nacional desde o
           início do mandato (projetos, medidas provisórias e vetos), com a situação oficial de cada item.
@@ -69,6 +85,8 @@ export default async function PainelPresidente() {
           porPagina={ITENS_POR_PAGINA}
         />
       </section>
+
+      <Anuncio posicao="secao" />
 
       <section className={p.secao}>
         <h2>Medidas provisórias</h2>

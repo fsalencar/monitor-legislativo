@@ -19,6 +19,7 @@ import {
 } from "@/lib/perfil";
 import { cargo, Localizador } from "./componentes";
 import { VotosLista } from "./votos";
+import { ehAssembleia, SIGLA_CASA } from "@/lib/casas";
 import Anuncio from "../../Anuncio";
 import styles from "./perfil.module.css";
 
@@ -53,7 +54,8 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
     getTempoAfastado(id),
   ]);
   if (!p) notFound();
-  const completa = await getCoberturaVotosCompleta(p.casa);
+  const assembleia = ehAssembleia(p.casa);
+  const completa = assembleia ? false : await getCoberturaVotosCompleta(p.casa);
 
   return (
     <main className={`moldura ${styles.pagina}`}>
@@ -64,11 +66,26 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
       <div className={styles.colunas}>
         <div className={styles.principal}>
           <Cabecalho p={p} />
-          <Votos p={p} cobertura={textoCobertura(completa)} />
-          <Anuncio posicao="secao" />
-          <Autoria id={p.id} casa={p.casa} autorias={autoria} />
-          <PresencaSessoes casa={p.casa} presenca={presenca} />
-          <Afastamentos casa={p.casa} afastamentos={afastamentos} tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)} />
+          {assembleia ? (
+            <>
+              <section className={styles.secao}>
+                <h2>Atividade parlamentar</h2>
+                <p className={styles.nota}>
+                  Votos, projetos de autoria, presença e afastamentos {SIGLA_CASA[p.casa].na} ainda não foram
+                  carregados. Por enquanto, consulte a página oficial do deputado.
+                </p>
+              </section>
+              <Anuncio posicao="secao" />
+            </>
+          ) : (
+            <>
+              <Votos p={p} cobertura={textoCobertura(completa)} />
+              <Anuncio posicao="secao" />
+              <Autoria id={p.id} casa={p.casa} autorias={autoria} />
+              <PresencaSessoes casa={p.casa} presenca={presenca} />
+              <Afastamentos casa={p.casa} afastamentos={afastamentos} tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)} />
+            </>
+          )}
           <Mandatos p={p} tempoAfastado={tempoAfastado} />
         </div>
 
@@ -102,7 +119,7 @@ function Cabecalho({ p }: { p: Perfil }) {
           <p className={styles.nomeCivil}>Nome civil: {p.nomeCivil}</p>
         )}
         <a href={p.urlFonte} target="_blank" rel="noopener noreferrer" className={styles.fonte}>
-          Página oficial {p.casa === "senado" ? "no Senado" : "na Câmara"}
+          Página oficial {SIGLA_CASA[p.casa].na}
         </a>
       </div>
     </header>
@@ -173,10 +190,11 @@ function mandatoAtualSenado(legs: Legislatura[]): Legislatura[] {
 function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastado[] }) {
   const dias = new Map(tempoAfastado.map((t) => [t.legislatura, t]));
   const senado = p.casa === "senado";
+  const assembleia = ehAssembleia(p.casa);
   const doMandato = senado ? mandatoAtualSenado(p.legislaturas) : [];
   return (
     <section className={styles.secao}>
-      <h2>{senado ? "Mandatos no Senado" : "Legislaturas com mandato na Câmara"}</h2>
+      <h2>{senado ? "Mandatos no Senado" : `Legislaturas com mandato ${SIGLA_CASA[p.casa].na}`}</h2>
       {doMandato.length > 0 && (
         <p className={styles.mandatoSenado}>
           Mandato atual: {ano(doMandato[0].inicio)} a {ano(doMandato[doMandato.length - 1].fim ?? doMandato[0].inicio)}
@@ -187,10 +205,14 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
         </p>
       )}
       <p className={styles.nota}>
-        Legislatura é o período de 4 anos de trabalho do Congresso, numerado desde 1826.{" "}
-        {senado
-          ? "O mandato de senador dura 8 anos e cobre duas legislaturas. A fonte não informa o partido de mandatos anteriores."
-          : "Cada legislatura corresponde a um mandato de deputado."}
+        {assembleia
+          ? "Legislatura é o período de 4 anos de trabalho da Assembleia; cada uma corresponde a um mandato de deputado estadual. A fonte não informa o partido de legislaturas anteriores."
+          : <>
+              Legislatura é o período de 4 anos de trabalho do Congresso, numerado desde 1826.{" "}
+              {senado
+                ? "O mandato de senador dura 8 anos e cobre duas legislaturas. A fonte não informa o partido de mandatos anteriores."
+                : "Cada legislatura corresponde a um mandato de deputado."}
+            </>}
       </p>
       <div className={styles.tabelaRolagem}>
         <table className={styles.tabela}>
@@ -199,7 +221,7 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
               <th scope="col">Legislatura</th>
               <th scope="col">Partido</th>
               <th scope="col">UF</th>
-              <th scope="col">Tempo afastado</th>
+              {!assembleia && <th scope="col">Tempo afastado</th>}
             </tr>
           </thead>
           <tbody>
@@ -211,7 +233,7 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
                 </td>
                 <td>{l.partido}</td>
                 <td>{l.uf}</td>
-                <td>{l.situacao === "futura" ? "—" : textoDias(dias.get(l.numero))}</td>
+                {!assembleia && <td>{l.situacao === "futura" ? "—" : textoDias(dias.get(l.numero))}</td>}
               </tr>
             ))}
           </tbody>

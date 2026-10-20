@@ -671,3 +671,91 @@
     border-bottom: 2px solid var(--ambar);
   }
 }
+
+/* Seletor de Assembleia (aba Deputados estaduais). */
+.assembleias {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: -0.5rem;
+}
+
+.assembleias p {
+  margin: 0;
+  width: 100%;
+  color: var(--nevoa-2);
+  font-size: 0.875rem;
+}
+
+.assembleia {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  background: var(--indigo);
+  color: var(--poeira);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.assembleia span {
+  color: var(--nevoa);
+  font-size: 0.875rem;
+}
+
+.assembleia:hover {
+  border-color: var(--nevoa-2);
+}
+
+.assembleia[aria-pressed="true"] {
+  border-color: var(--ambar);
+  color: var(--ambar);
+  font-weight: 700;
+}
+
+/* Foto oficial do presidente ao lado do nome, no formato das fotos dos parlamentares. */
+.presidenteIdentidade {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.presidenteFoto {
+  margin: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.presidenteFoto img {
+  width: 120px;
+  height: 153px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: var(--raio);
+  background: var(--linha);
+  box-shadow: var(--sombra);
+}
+
+.presidenteFoto figcaption {
+  max-width: 120px;
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  color: var(--nevoa-2);
+}
+
+.presidenteFoto figcaption a {
+  color: inherit;
+  font-weight: 400;
+}
+
+@media (max-width: 34rem) {
+  .presidenteIdentidade {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}

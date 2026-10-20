@@ -5,16 +5,23 @@ import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { corDoPartido } from "@/lib/cores";
 import { layoutHemiciclo, RAIO_INTERNO } from "@/lib/hemiciclo";
 import { contarPartidos, ordenarCadeiras } from "@/lib/ordem";
-import type { CasaId, Parlamentar } from "@/lib/plenario";
+import { SIGLA_CASA, type Assembleia, type CasaId } from "@/lib/casas";
+import type { Parlamentar } from "@/lib/plenario";
 import styles from "./plenario.module.css";
 
-type Aba = CasaId | "vereadores" | "presidente";
+type Aba = "estaduais" | "camara" | "senado" | "presidente";
 
-const ABAS: { id: Aba; titulo: string; casa: string }[] = [
-  { id: "vereadores", titulo: "Vereadores", casa: "Câmaras Municipais" },
-  { id: "camara", titulo: "Deputados", casa: "Câmara dos Deputados" },
-  { id: "senado", titulo: "Senadores", casa: "Senado Federal" },
-  { id: "presidente", titulo: "Presidente", casa: "Presidência da República" },
+const ABAS: { id: Aba; titulo: string }[] = [
+  { id: "estaduais", titulo: "Deputados estaduais" },
+  { id: "camara", titulo: "Deputados federais" },
+  { id: "senado", titulo: "Senadores" },
+  { id: "presidente", titulo: "Presidente" },
+];
+
+// Assembleias Legislativas disponíveis (as que publicam dados abertos), na ordem do seletor.
+const ASSEMBLEIAS: { id: Assembleia; uf: string; estado: string }[] = [
+  { id: "al-sp", uf: "SP", estado: "São Paulo" },
+  { id: "al-mg", uf: "MG", estado: "Minas Gerais" },
 ];
 
 const ABA_INICIAL: Aba = "camara";
@@ -35,9 +42,15 @@ function assinarUrl(avisar: () => void) {
   return () => window.removeEventListener("popstate", avisar);
 }
 
-function lerAbaDaUrl(): Aba | null {
-  const c = new URLSearchParams(window.location.search).get("casa");
-  return c === "senado" || c === "camara" || c === "vereadores" || c === "presidente" ? c : null;
+// ?casa= aceita camara, senado, presidente e a sigla da Assembleia (al-sp, al-mg).
+function lerCasaDaUrl(): string | null {
+  return new URLSearchParams(window.location.search).get("casa");
+}
+
+function abaDe(casa: string | null): Aba | null {
+  if (casa === "camara" || casa === "senado" || casa === "presidente") return casa;
+  if (casa === "estaduais" || ASSEMBLEIAS.some((a) => a.id === casa)) return "estaduais";
+  return null;
 }
 
 // ?sel=<id> abre o plenário com uma cadeira já marcada (link vindo do perfil).
@@ -59,25 +72,44 @@ export default function Plenario({
   presidente: React.ReactNode;
 }) {
   // Aba no endereço (?casa=), para poder compartilhar o link; a escolha na página tem prioridade.
-  const abaDaUrl = useSyncExternalStore(assinarUrl, lerAbaDaUrl, () => null);
+  const casaDaUrl = useSyncExternalStore(assinarUrl, lerCasaDaUrl, () => null);
   const selDaUrl = useSyncExternalStore(assinarUrl, lerSelDaUrl, () => null);
   const [abaEscolhida, setAbaEscolhida] = useState<Aba | null>(null);
-  const aba = abaEscolhida ?? abaDaUrl ?? ABA_INICIAL;
+  const aba = abaEscolhida ?? abaDe(casaDaUrl) ?? ABA_INICIAL;
+  const [assembleiaEscolhida, setAssembleia] = useState<Assembleia | null>(null);
+  const assembleia =
+    assembleiaEscolhida ?? ASSEMBLEIAS.find((a) => a.id === casaDaUrl)?.id ?? ASSEMBLEIAS[0].id;
+  // Casa cujo plenário aparece (nas abas que têm plenário).
+  const casaAtual: CasaId | null = aba === "estaduais" ? assembleia : aba === "presidente" ? null : aba;
   const [partido, setPartido] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
   // undefined = ainda não houve escolha na página; vale a cadeira do endereço.
   const [escolhido, setSelecionado] = useState<number | null | undefined>(undefined);
   const selecionado = escolhido === undefined ? (abaEscolhida ? null : selDaUrl) : escolhido;
 
-  function escolherAba(nova: Aba) {
-    setAbaEscolhida(nova);
+  function marcarNaUrl(casa: string) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("casa", casa);
+    url.searchParams.delete("sel");
+    window.history.replaceState(null, "", url);
+  }
+
+  function limparSelecao() {
     setPartido(null);
     setBusca("");
     setSelecionado(null);
-    const url = new URL(window.location.href);
-    url.searchParams.set("casa", nova);
-    url.searchParams.delete("sel");
-    window.history.replaceState(null, "", url);
+  }
+
+  function escolherAba(nova: Aba) {
+    setAbaEscolhida(nova);
+    limparSelecao();
+    marcarNaUrl(nova === "estaduais" ? assembleia : nova);
+  }
+
+  function escolherAssembleia(nova: Assembleia) {
+    setAssembleia(nova);
+    limparSelecao();
+    marcarNaUrl(nova);
   }
 
   return (
@@ -85,7 +117,11 @@ export default function Plenario({
       <div role="tablist" aria-label="Casa legislativa" className={styles.abas}>
         {ABAS.map((a) => {
           const detalhe =
-            a.id === "vereadores" ? "Em construção" : a.id === "presidente" ? "Mandato atual" : `${casas[a.id].length} cadeiras`;
+            a.id === "estaduais"
+              ? ASSEMBLEIAS.map((x) => x.uf).join(" e ")
+              : a.id === "presidente"
+                ? "Mandato atual"
+                : `${casas[a.id].length} cadeiras`;
           return (
             <button
               key={a.id}
@@ -103,23 +139,31 @@ export default function Plenario({
         })}
       </div>
 
-      {aba === "presidente" ? (
+      {aba === "estaduais" && (
+        <div className={styles.assembleias} role="group" aria-label="Assembleia Legislativa">
+          {ASSEMBLEIAS.map((a) => (
+            <button
+              key={a.id}
+              className={styles.assembleia}
+              aria-pressed={assembleia === a.id}
+              onClick={() => escolherAssembleia(a.id)}
+            >
+              {a.estado} <span>{casas[a.id].length} cadeiras</span>
+            </button>
+          ))}
+          <p>Outros estados entram aos poucos, conforme as Assembleias publicam dados abertos.</p>
+        </div>
+      )}
+
+      {casaAtual === null ? (
         <section id="painel-casa" role="tabpanel" aria-labelledby="aba-presidente">
           {presidente}
         </section>
-      ) : aba === "vereadores" ? (
-        <section id="painel-casa" role="tabpanel" aria-labelledby="aba-vereadores" className={styles.emConstrucao}>
-          <h1 className={styles.titulo}>Câmaras Municipais</h1>
-          <p>
-            Cada Câmara Municipal publica seus dados de um jeito diferente. A primeira a entrar será a Câmara
-            Municipal de São Paulo; depois, as demais capitais, uma a uma.
-          </p>
-        </section>
       ) : (
         <Casa
-          key={aba}
-          casa={aba}
-          parlamentares={casas[aba]}
+          key={casaAtual}
+          casa={casaAtual}
+          parlamentares={casas[casaAtual]}
           partido={partido}
           setPartido={setPartido}
           busca={busca}
@@ -202,8 +246,8 @@ function Casa({
     if (alvo) setSelecionado(ordenados[Number(alvo.getAttribute("data-i"))].id);
   }
 
-  const titulo = casa === "senado" ? "senadores" : "deputados";
-  const nomeCasa = casa === "senado" ? "Senado Federal" : "Câmara dos Deputados";
+  const titulo = casa === "senado" ? "senadores" : casa === "camara" ? "deputados" : "deputados estaduais";
+  const nomeCasa = SIGLA_CASA[casa].nome;
   const mira = idxAtual >= 0 ? cadeiras[idxAtual] : null;
   const rotulo = mira ? pct(mira.x, -mira.y) : null;
 
@@ -232,7 +276,7 @@ function Casa({
             type="search"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder={casa === "senado" ? "Ex.: Alan Rick" : "Ex.: Tabata"}
+            placeholder={casa === "senado" ? "Ex.: Alan Rick" : casa === "camara" ? "Ex.: Tabata" : "Ex.: digite parte do nome"}
             autoComplete="off"
           />
         </div>
@@ -247,6 +291,7 @@ function Casa({
             ))}
           </select>
         </div>
+        {ufs.length > 1 && (
         <div className={styles.campo}>
           <label htmlFor="filtro-uf">Estado</label>
           <select id="filtro-uf" value={uf ?? ""} onChange={(e) => setUf(e.target.value || null)}>
@@ -258,6 +303,7 @@ function Casa({
             ))}
           </select>
         </div>
+        )}
         {filtrando && (
           <button
             className={styles.limpar}
@@ -564,7 +610,7 @@ function Cartao({ p, casa, cor, fechar }: { p: Parlamentar; casa: CasaId; cor: s
             </div>
             {p.mandatos !== null && (
               <div>
-                <dt>Legislaturas na Câmara</dt>
+                <dt>Legislaturas {SIGLA_CASA[casa].na}</dt>
                 <dd>{p.mandatos}</dd>
               </div>
             )}
@@ -576,7 +622,7 @@ function Cartao({ p, casa, cor, fechar }: { p: Parlamentar; casa: CasaId; cor: s
           Ver atividade
         </Link>
         <a href={p.urlFonte} target="_blank" rel="noopener noreferrer" className={styles.oficial}>
-          Página oficial {casa === "senado" ? "no Senado" : "na Câmara"}
+          Página oficial {SIGLA_CASA[casa].na}
         </a>
       </div>
     </article>

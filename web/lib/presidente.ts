@@ -10,6 +10,10 @@ export const PRESIDENTE = {
   inicio: "2023-01-01",
   fim: "2027-01-05",
   urlOficial: "https://www.gov.br/planalto/pt-br",
+  // Retrato oficial (Palácio do Planalto), via Wikimedia Commons, licença CC BY 2.0: exige crédito.
+  foto: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/92/Foto_oficial_do_Presidente_da_Rep%C3%BAblica_Luiz_In%C3%A1cio_Lula_da_Silva_%28cropped%29.jpg/500px-Foto_oficial_do_Presidente_da_Rep%C3%BAblica_Luiz_In%C3%A1cio_Lula_da_Silva_%28cropped%29.jpg",
+  creditoFoto: "Ricardo Stuckert/PR (CC BY 2.0)",
+  urlFoto: "https://commons.wikimedia.org/wiki/File:Foto_oficial_do_Presidente_da_Rep%C3%BAblica_Luiz_In%C3%A1cio_Lula_da_Silva_(cropped).jpg",
 };
 
 // Autores com que a Câmara e o Senado registram a Presidência da República.

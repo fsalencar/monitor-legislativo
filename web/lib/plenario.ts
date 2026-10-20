@@ -1,7 +1,9 @@
 import { cacheLife } from "next/cache";
 import { sql } from "./db";
 
-export type CasaId = "senado" | "camara";
+import type { CasaId } from "./casas";
+
+export type { CasaId } from "./casas";
 
 export type Parlamentar = {
   id: number;
@@ -46,7 +48,8 @@ export async function getPlenario(casa: CasaId): Promise<Parlamentar[]> {
     uf: r.uf ?? "",
     foto: r.url_foto,
     urlFonte: r.url_fonte,
-    mandatos: casa === "camara" ? Number(r.mandatos) : null,
+    // Histórico de legislaturas completo só na Câmara e na ALMG.
+    mandatos: casa === "camara" || casa === "al-mg" ? Number(r.mandatos) : null,
   }));
 }
 

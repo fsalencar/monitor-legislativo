@@ -6,7 +6,7 @@ from datetime import date, timedelta
 
 from . import db
 from .camara import CamaraClient
-from .jobs import (camara_atividade, camara_deputados, camara_votacoes, presidente, resumos,
+from .jobs import (camara_atividade, camara_deputados, camara_votacoes, estaduais, presidente, resumos,
                    senado_atividade, senado_senadores)
 
 
@@ -31,6 +31,7 @@ def main() -> None:
     pres = sub.add_parser("camara-presencas", help="presença em sessões deliberativas do plenário")
     pres.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=30))
     pres.add_argument("--ate", type=date.fromisoformat, default=date.today())
+    sub.add_parser("estaduais", help="deputados estaduais em exercício (ALESP e ALMG)")
     pr = sub.add_parser("presidente", help="projetos, medidas provisórias e vetos da Presidência")
     pr.add_argument("--desde", type=int, default=date.today().year, help="ano inicial (padrão: ano atual)")
     sub.add_parser("senado-mandatos", help="histórico de mandatos dos senadores em exercício")
@@ -44,6 +45,12 @@ def main() -> None:
     res.add_argument("--dry-run", action="store_true", help="só mostra os resumos, não grava")
     res.add_argument("--minutos", type=float, help="tempo máximo; para sem erro ao esgotar")
     args = p.parse_args()
+
+    if args.cmd == "estaduais":
+        with db.connect() as conn, db.execucao(conn, args.cmd) as stats:
+            stats["registros"] = estaduais.alesp(conn) + estaduais.almg(conn)
+        print(f"estaduais: {stats['registros']} deputados")
+        return
 
     if args.cmd == "presidente":
         with db.connect() as conn, db.execucao(conn, args.cmd) as stats:

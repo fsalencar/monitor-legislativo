@@ -39,5 +39,6 @@ export async function Localizador({ id, casa, partido }: { id: number; casa: Cas
 
 export function cargo(casa: CasaId, sexo: string | null): string {
   if (casa === "senado") return sexo === "F" ? "senadora" : sexo === "M" ? "senador" : "senador(a)";
-  return sexo === "F" ? "deputada federal" : sexo === "M" ? "deputado federal" : "deputado(a) federal";
+  const nivel = casa === "camara" ? "federal" : "estadual";
+  return sexo === "F" ? `deputada ${nivel}` : sexo === "M" ? `deputado ${nivel}` : `deputado(a) ${nivel}`;
 }

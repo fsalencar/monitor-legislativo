@@ -135,8 +135,8 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
       numero: l.numero,
       inicio: iso(l.data_inicio)!,
       fim: iso(l.data_fim),
-      // Mandatos antigos do Senado vêm sem partido na fonte: mostra "—", não "Sem partido".
-      partido: l.sigla_partido ?? (p.casa_id === "senado" ? "—" : SEM_PARTIDO),
+      // Mandatos antigos do Senado e das Assembleias vêm sem partido na fonte: mostra "—", não "Sem partido".
+      partido: l.sigla_partido ?? (p.casa_id === "camara" ? SEM_PARTIDO : "—"),
       uf: l.uf ?? "",
       emExercicio: l.em_exercicio,
       situacao: l.situacao,
