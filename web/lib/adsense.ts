@@ -11,3 +11,6 @@ export const ADSENSE_CLIENTE = bruto ? (bruto.startsWith("ca-") ? bruto : `ca-${
 export const ADSENSE_EDITOR = ADSENSE_CLIENTE?.replace(/^ca-/, "");
 
 export const ADSENSE_BLOCO = process.env.NEXT_PUBLIC_ADSENSE_SLOT?.trim() || undefined;
+
+/** Bloco entre seções do perfil; sem bloco próprio, usa o mesmo do rodapé. */
+export const ADSENSE_BLOCO_PERFIL = process.env.NEXT_PUBLIC_ADSENSE_SLOT_PERFIL?.trim() || ADSENSE_BLOCO;

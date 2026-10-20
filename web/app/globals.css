@@ -196,3 +196,10 @@ h3 {
 .anuncio + .rodape {
   margin-top: 1.5rem;
 }
+
+/* Bloco entre seções do perfil: mesma régua das seções, sem a moldura do rodapé. */
+.anuncioSecao {
+  margin-top: 0;
+  max-width: 52rem;
+  padding-block: 1rem 0;
+}
