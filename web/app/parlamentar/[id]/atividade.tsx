@@ -1,5 +1,5 @@
 import { PROJETOS_POR_PAGINA, type Afastamento, type Autorias, type Presenca } from "@/lib/perfil";
-import { ProjetosLista } from "./projetos";
+import { ListaFiltrada } from "./projetos";
 import styles from "./perfil.module.css";
 
 const dataCurta = new Intl.DateTimeFormat("pt-BR", {
@@ -37,14 +37,15 @@ export function Autoria({ id, casa, autorias }: { id: number; casa: string; auto
             apresentados.{" "}
             <span>
               {n(porDesfecho.rejeitado)} {porDesfecho.rejeitado === 1 ? "rejeitado" : "rejeitados"};{" "}
+              {porDesfecho.caducou > 0 && `${n(porDesfecho.caducou)} perderam a validade ou foram revogados; `}
               {n(porDesfecho.arquivado)} arquivados ou retirados; {n(porDesfecho.tramitando)} em tramitação
               {porDesfecho.sem > 0 && `; ${n(porDesfecho.sem)} sem situação informada pela fonte`}.
             </span>
           </p>
-          <ProjetosLista
-            id={id}
+          <ListaFiltrada
+            endpoint={`/api/parlamentar/${id}/projetos`}
             total={total}
-            porDesfecho={porDesfecho}
+            porCategoria={porDesfecho}
             iniciais={projetos}
             porPagina={PROJETOS_POR_PAGINA}
           />

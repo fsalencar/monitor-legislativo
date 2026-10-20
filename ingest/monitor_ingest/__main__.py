@@ -6,8 +6,8 @@ from datetime import date, timedelta
 
 from . import db
 from .camara import CamaraClient
-from .jobs import (camara_atividade, camara_deputados, camara_votacoes, resumos, senado_atividade,
-                   senado_senadores)
+from .jobs import (camara_atividade, camara_deputados, camara_votacoes, presidente, resumos,
+                   senado_atividade, senado_senadores)
 
 
 def main() -> None:
@@ -31,6 +31,8 @@ def main() -> None:
     pres = sub.add_parser("camara-presencas", help="presença em sessões deliberativas do plenário")
     pres.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=30))
     pres.add_argument("--ate", type=date.fromisoformat, default=date.today())
+    pr = sub.add_parser("presidente", help="projetos, medidas provisórias e vetos da Presidência")
+    pr.add_argument("--desde", type=int, default=date.today().year, help="ano inicial (padrão: ano atual)")
     sub.add_parser("senado-mandatos", help="histórico de mandatos dos senadores em exercício")
     sub.add_parser("senado-licencas", help="licenças e afastamentos dos senadores")
     sub.add_parser("senado-autorias", help="projetos de autoria dos senadores")
@@ -42,6 +44,12 @@ def main() -> None:
     res.add_argument("--dry-run", action="store_true", help="só mostra os resumos, não grava")
     res.add_argument("--minutos", type=float, help="tempo máximo; para sem erro ao esgotar")
     args = p.parse_args()
+
+    if args.cmd == "presidente":
+        with db.connect() as conn, db.execucao(conn, args.cmd) as stats:
+            stats["registros"] = presidente.atualizar(conn, args.desde)
+        print(f"presidente: {stats['registros']} registros")
+        return
 
     if args.cmd == "camara-situacoes":
         with db.connect() as conn, db.execucao(conn, args.cmd) as stats:

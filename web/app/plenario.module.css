@@ -620,3 +620,54 @@
   padding: 0.4rem 0.9rem;
   border-bottom: 1px solid var(--linha);
 }
+
+/* Aba Presidente: cabeçalho e seções empilhadas (sem semicírculo). */
+.presidente {
+  display: grid;
+  gap: 2.75rem;
+}
+
+.presidenteTopo {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 52rem;
+}
+
+.presidenteNome {
+  margin: 0.25rem 0 0;
+  font-family: var(--fonte-nomes), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  line-height: 1.15;
+}
+
+.presidenteTopo a {
+  color: var(--ambar);
+  font-weight: 700;
+}
+
+.presidenteNota {
+  margin: 0.5rem 0 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--indigo);
+  color: var(--nevoa);
+  max-width: 68ch;
+}
+
+/* Celular: as quatro abas em grade 2×2, todas visíveis (sem rolagem lateral escondida). */
+@media (max-width: 40rem) {
+  .abas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+  .aba {
+    min-width: 0;
+    border-bottom: 1px solid var(--linha);
+  }
+  .aba[aria-selected="true"] {
+    border-bottom: 2px solid var(--ambar);
+  }
+}

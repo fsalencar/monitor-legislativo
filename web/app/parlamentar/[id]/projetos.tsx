@@ -1,21 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import type { Desfecho, ProjetoAutoria } from "@/lib/perfil";
 import styles from "./perfil.module.css";
 
-const ROTULO: Record<Desfecho, string> = {
+export type ItemLista = {
+  sigla: string;
+  ementa: string | null;
+  resumo: string | null;
+  situacao: string | null;
+  desfecho: string;
+  url: string;
+};
+
+export type Filtro = { id: string | null; titulo: string };
+
+// Rótulos e filtros dos projetos de parlamentares (desfecho a partir da situação oficial).
+export const ROTULOS_DESFECHO: Record<string, string> = {
   lei: "Virou lei",
   rejeitado: "Rejeitado",
+  caducou: "Perdeu a validade ou revogado",
   arquivado: "Arquivado ou retirado",
   tramitando: "Em tramitação",
   sem: "Situação não informada",
 };
 
-const FILTROS: { id: Desfecho | null; titulo: string }[] = [
+export const FILTROS_DESFECHO: Filtro[] = [
   { id: null, titulo: "Todos" },
   { id: "lei", titulo: "Viraram lei" },
   { id: "rejeitado", titulo: "Rejeitados" },
+  { id: "caducou", titulo: "Perderam a validade ou revogados" },
   { id: "arquivado", titulo: "Arquivados ou retirados" },
   { id: "tramitando", titulo: "Em tramitação" },
   { id: "sem", titulo: "Sem situação informada" },
@@ -23,37 +36,44 @@ const FILTROS: { id: Desfecho | null; titulo: string }[] = [
 
 const numero = new Intl.NumberFormat("pt-BR");
 
-// Lista de projetos de autoria com filtro por desfecho; busca cada filtro e as páginas seguintes sob demanda.
-export function ProjetosLista({
-  id,
+// Lista com filtro por categoria; busca cada filtro e as páginas seguintes em `endpoint`
+// (?desfecho=&inicio=&quantos=). Filtros sem itens não aparecem.
+export function ListaFiltrada({
+  endpoint,
   total,
-  porDesfecho,
+  porCategoria,
   iniciais,
   porPagina,
+  filtros = FILTROS_DESFECHO,
+  rotulos = ROTULOS_DESFECHO,
+  rotuloGrupo = "Filtrar projetos por desfecho",
 }: {
-  id: number;
+  endpoint: string;
   total: number;
-  porDesfecho: Record<Desfecho, number>;
-  iniciais: ProjetoAutoria[];
+  porCategoria: Record<string, number>;
+  iniciais: ItemLista[];
   porPagina: number;
+  filtros?: Filtro[];
+  rotulos?: Record<string, string>;
+  rotuloGrupo?: string;
 }) {
-  const [filtro, setFiltro] = useState<Desfecho | null>(null);
-  const [projetos, setProjetos] = useState(iniciais);
+  const [filtro, setFiltro] = useState<string | null>(null);
+  const [itens, setItens] = useState(iniciais);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState(false);
-  const totalFiltro = filtro ? porDesfecho[filtro] : total;
-  const restantes = totalFiltro - projetos.length;
+  const totalFiltro = filtro ? (porCategoria[filtro] ?? 0) : total;
+  const restantes = totalFiltro - itens.length;
 
-  async function buscar(desfecho: Desfecho | null, inicio: number, quantos: number | "todos") {
+  async function buscar(categoria: string | null, inicio: number, quantos: number | "todos") {
     setCarregando(true);
     setErro(false);
     try {
       const busca = new URLSearchParams({ inicio: String(inicio), quantos: String(quantos) });
-      if (desfecho) busca.set("desfecho", desfecho);
-      const r = await fetch(`/api/parlamentar/${id}/projetos?${busca}`);
+      if (categoria) busca.set("desfecho", categoria);
+      const r = await fetch(`${endpoint}?${busca}`);
       if (!r.ok) throw new Error(String(r.status));
-      const novos: ProjetoAutoria[] = await r.json();
-      setProjetos((atuais) => (inicio === 0 ? novos : [...atuais, ...novos]));
+      const novos: ItemLista[] = await r.json();
+      setItens((atuais) => (inicio === 0 ? novos : [...atuais, ...novos]));
     } catch {
       setErro(true);
     } finally {
@@ -61,37 +81,39 @@ export function ProjetosLista({
     }
   }
 
-  function escolher(desfecho: Desfecho | null) {
-    if (desfecho === filtro) return;
-    setFiltro(desfecho);
-    if (desfecho === null) setProjetos(iniciais);
-    else buscar(desfecho, 0, porPagina);
+  function escolher(categoria: string | null) {
+    if (categoria === filtro) return;
+    setFiltro(categoria);
+    if (categoria === null) setItens(iniciais);
+    else buscar(categoria, 0, porPagina);
   }
 
   return (
     <>
-      <div className={styles.filtrosProjeto} role="group" aria-label="Filtrar projetos por desfecho">
-        {FILTROS.filter((f) => f.id === null || porDesfecho[f.id] > 0).map((f) => (
-          <button
-            key={f.titulo}
-            className={styles.filtroProjeto}
-            aria-pressed={filtro === f.id}
-            onClick={() => escolher(f.id)}
-          >
-            {f.titulo} <span>{numero.format(f.id ? porDesfecho[f.id] : total)}</span>
-          </button>
-        ))}
+      <div className={styles.filtrosProjeto} role="group" aria-label={rotuloGrupo}>
+        {filtros
+          .filter((f) => f.id === null || (porCategoria[f.id] ?? 0) > 0)
+          .map((f) => (
+            <button
+              key={f.titulo}
+              className={styles.filtroProjeto}
+              aria-pressed={filtro === f.id}
+              onClick={() => escolher(f.id)}
+            >
+              {f.titulo} <span>{numero.format(f.id ? (porCategoria[f.id] ?? 0) : total)}</span>
+            </button>
+          ))}
       </div>
 
       <ul className={styles.projetos} aria-busy={carregando} data-carregando={carregando || undefined}>
-        {projetos.map((pr) => (
+        {itens.map((pr) => (
           <li key={pr.url}>
             <p className={styles.projetoTopo}>
               <a href={pr.url} target="_blank" rel="noopener noreferrer" className={styles.prop}>
                 {pr.sigla}
               </a>
               <span className={styles.desfecho} data-desfecho={pr.desfecho}>
-                {ROTULO[pr.desfecho]}
+                {rotulos[pr.desfecho] ?? pr.desfecho}
               </span>
             </p>
             {pr.resumo ? (
@@ -110,17 +132,17 @@ export function ProjetosLista({
       {restantes > 0 && (
         <div className={styles.maisVotos} aria-live="polite">
           <p>
-            Mostrando {numero.format(projetos.length)} de {numero.format(totalFiltro)}.
+            Mostrando {numero.format(itens.length)} de {numero.format(totalFiltro)}.
           </p>
-          <button className={styles.todos} onClick={() => buscar(filtro, projetos.length, porPagina)} disabled={carregando}>
+          <button className={styles.todos} onClick={() => buscar(filtro, itens.length, porPagina)} disabled={carregando}>
             {carregando ? "Carregando…" : `Mostrar mais ${Math.min(porPagina, restantes)}`}
           </button>
-          <button className={styles.botaoSecundario} onClick={() => buscar(filtro, projetos.length, "todos")} disabled={carregando}>
+          <button className={styles.botaoSecundario} onClick={() => buscar(filtro, itens.length, "todos")} disabled={carregando}>
             Mostrar todos ({numero.format(totalFiltro)})
           </button>
         </div>
       )}
-      {erro && <p className={styles.erro}>Não foi possível carregar os projetos. Tente de novo.</p>}
+      {erro && <p className={styles.erro}>Não foi possível carregar a lista. Tente de novo.</p>}
     </>
   );
 }

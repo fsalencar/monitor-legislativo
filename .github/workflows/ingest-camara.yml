@@ -1,4 +1,4 @@
-name: Ingestão Câmara e Senado
+name: Ingestão Câmara, Senado e Presidência
 
 on:
   schedule:
@@ -63,6 +63,9 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: python -m monitor_ingest senado-licencas
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest presidente
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: python -m monitor_ingest resumos --limite 150 --minutos 20

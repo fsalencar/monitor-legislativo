@@ -175,17 +175,18 @@ export function textoCobertura(completa: boolean): string {
 }
 
 // Desfecho do projeto a partir da situação oficial (texto da fonte, Câmara ou Senado):
-// lei = virou norma jurídica; rejeitado = rejeitado ou vetado integralmente; arquivado = arquivado,
-// retirado, prejudicado, perdeu a eficácia, tramitação encerrada...; tramitando = qualquer outra
-// situação; sem = a fonte não informou.
-export const DESFECHOS = ["lei", "rejeitado", "arquivado", "tramitando", "sem"] as const;
+// lei = virou norma jurídica; rejeitado = rejeitado ou vetado integralmente; caducou = perdeu a
+// eficácia ou foi revogado (típico de medidas provisórias); arquivado = arquivado, retirado,
+// prejudicado, tramitação encerrada...; tramitando = qualquer outra situação; sem = a fonte não informou.
+export const DESFECHOS = ["lei", "rejeitado", "caducou", "arquivado", "tramitando", "sem"] as const;
 export type Desfecho = (typeof DESFECHOS)[number];
 
-const DESFECHO_SQL = sql`
+export const DESFECHO_SQL = sql`
   case
     when pr.situacao ilike 'transformad% em norma%' then 'lei'
     when pr.situacao ilike any (array['rejeitad%', 'vetad%']) then 'rejeitado'
-    when pr.situacao ilike any (array['arquivad%', 'prejudicad%', 'retirad%', 'perdeu a efic%', 'devolvid%',
+    when pr.situacao ilike any (array['sem efic%', 'perdeu a efic%', 'revogad%']) then 'caducou'
+    when pr.situacao ilike any (array['arquivad%', 'prejudicad%', 'retirad%', 'devolvid%',
                                       'tramitação encerrada%', 'transformad% em indica%',
                                       'aguardando despacho de arquivamento%']) then 'arquivado'
     when pr.situacao is null then 'sem'

@@ -1,4 +1,5 @@
 import { getPlenario } from "@/lib/plenario";
+import PainelPresidente from "./PainelPresidente";
 import Plenario from "./Plenario";
 
 export default async function Home() {
@@ -6,7 +7,7 @@ export default async function Home() {
 
   return (
     <main className="moldura">
-      <Plenario casas={{ senado, camara }} />
+      <Plenario casas={{ senado, camara }} presidente={<PainelPresidente />} />
     </main>
   );
 }

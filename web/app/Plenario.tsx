@@ -8,12 +8,13 @@ import { contarPartidos, ordenarCadeiras } from "@/lib/ordem";
 import type { CasaId, Parlamentar } from "@/lib/plenario";
 import styles from "./plenario.module.css";
 
-type Aba = CasaId | "vereadores";
+type Aba = CasaId | "vereadores" | "presidente";
 
 const ABAS: { id: Aba; titulo: string; casa: string }[] = [
   { id: "vereadores", titulo: "Vereadores", casa: "Câmaras Municipais" },
   { id: "camara", titulo: "Deputados", casa: "Câmara dos Deputados" },
   { id: "senado", titulo: "Senadores", casa: "Senado Federal" },
+  { id: "presidente", titulo: "Presidente", casa: "Presidência da República" },
 ];
 
 const ABA_INICIAL: Aba = "camara";
@@ -36,7 +37,7 @@ function assinarUrl(avisar: () => void) {
 
 function lerAbaDaUrl(): Aba | null {
   const c = new URLSearchParams(window.location.search).get("casa");
-  return c === "senado" || c === "camara" || c === "vereadores" ? c : null;
+  return c === "senado" || c === "camara" || c === "vereadores" || c === "presidente" ? c : null;
 }
 
 // ?sel=<id> abre o plenário com uma cadeira já marcada (link vindo do perfil).
@@ -49,7 +50,14 @@ function normaliza(s: string) {
   return s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 }
 
-export default function Plenario({ casas }: { casas: Record<CasaId, Parlamentar[]> }) {
+export default function Plenario({
+  casas,
+  presidente,
+}: {
+  casas: Record<CasaId, Parlamentar[]>;
+  // Painel da Presidência, montado no servidor e mostrado direto ao escolher a aba.
+  presidente: React.ReactNode;
+}) {
   // Aba no endereço (?casa=), para poder compartilhar o link; a escolha na página tem prioridade.
   const abaDaUrl = useSyncExternalStore(assinarUrl, lerAbaDaUrl, () => null);
   const selDaUrl = useSyncExternalStore(assinarUrl, lerSelDaUrl, () => null);
@@ -76,7 +84,8 @@ export default function Plenario({ casas }: { casas: Record<CasaId, Parlamentar[
     <div className={styles.raiz}>
       <div role="tablist" aria-label="Casa legislativa" className={styles.abas}>
         {ABAS.map((a) => {
-          const total = a.id === "vereadores" ? null : casas[a.id].length;
+          const detalhe =
+            a.id === "vereadores" ? "Em construção" : a.id === "presidente" ? "Mandato atual" : `${casas[a.id].length} cadeiras`;
           return (
             <button
               key={a.id}
@@ -88,13 +97,17 @@ export default function Plenario({ casas }: { casas: Record<CasaId, Parlamentar[
               onClick={() => escolherAba(a.id)}
             >
               <span className={styles.abaTitulo}>{a.titulo}</span>
-              <span className={styles.abaDetalhe}>{total === null ? "Em construção" : `${total} cadeiras`}</span>
+              <span className={styles.abaDetalhe}>{detalhe}</span>
             </button>
           );
         })}
       </div>
 
-      {aba === "vereadores" ? (
+      {aba === "presidente" ? (
+        <section id="painel-casa" role="tabpanel" aria-labelledby="aba-presidente">
+          {presidente}
+        </section>
+      ) : aba === "vereadores" ? (
         <section id="painel-casa" role="tabpanel" aria-labelledby="aba-vereadores" className={styles.emConstrucao}>
           <h1 className={styles.titulo}>Câmaras Municipais</h1>
           <p>
