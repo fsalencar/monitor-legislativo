@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getCoberturaVotosCompleta, getIdsEmExercicio, getPerfil, textoCobertura, type Perfil } from "@/lib/perfil";
+import {
+  getCoberturaVotosCompleta,
+  getIdsEmExercicio,
+  getPerfil,
+  textoCobertura,
+  type Legislatura,
+  type Perfil,
+} from "@/lib/perfil";
 import { cargo, ListaVotos, Localizador } from "./componentes";
 import styles from "./perfil.module.css";
 
@@ -120,19 +127,39 @@ function Votos({ p, cobertura }: { p: Perfil; cobertura: string }) {
   );
 }
 
+const INICIO: Record<Legislatura["situacao"], string> = {
+  encerrada: "iniciada em",
+  "em curso": "iniciada em",
+  futura: "começa em",
+};
+
 function Mandatos({ p }: { p: Perfil }) {
+  const senado = p.casa === "senado";
+  // Mandato de senador: 8 anos, duas legislaturas seguidas.
+  const doMandato = senado ? [...p.legislaturas].sort((a, b) => a.numero - b.numero) : [];
   return (
     <section className={styles.secao}>
-      <h2>{p.casa === "senado" ? "Legislaturas do mandato atual" : "Legislaturas com mandato na Câmara"}</h2>
-      {p.casa === "senado" && (
-        <p className={styles.nota}>O histórico de mandatos anteriores no Senado ainda não foi carregado.</p>
+      <h2>{senado ? "Mandato atual" : "Legislaturas com mandato na Câmara"}</h2>
+      {senado && doMandato.length > 0 && (
+        <p className={styles.mandatoSenado}>
+          {ano(doMandato[0].inicio)} a {ano(doMandato[doMandato.length - 1].fim ?? doMandato[0].inicio)}
+          <span>
+            {" "}
+            (8 anos, {doMandato.map((l) => `${l.numero}ª`).join(" e ")} legislaturas)
+          </span>
+        </p>
       )}
+      <p className={styles.nota}>
+        Legislatura é o período de 4 anos de trabalho do Congresso, numerado desde 1826.{" "}
+        {senado
+          ? "O mandato de senador dura 8 anos e cobre duas legislaturas. O histórico de mandatos anteriores no Senado ainda não foi carregado."
+          : "Cada legislatura corresponde a um mandato de deputado."}
+      </p>
       <div className={styles.tabelaRolagem}>
         <table className={styles.tabela}>
           <thead>
             <tr>
               <th scope="col">Legislatura</th>
-              <th scope="col">Período</th>
               <th scope="col">Partido</th>
               <th scope="col">UF</th>
             </tr>
@@ -140,9 +167,9 @@ function Mandatos({ p }: { p: Perfil }) {
           <tbody>
             {p.legislaturas.map((l) => (
               <tr key={l.numero}>
-                <td>{l.numero}ª</td>
                 <td>
-                  {ano(l.inicio)} a {l.fim ? ano(l.fim) : "hoje"}
+                  <strong>{l.numero}ª</strong>, {INICIO[l.situacao]} {ano(l.inicio)}
+                  {l.situacao !== "encerrada" && <span className={styles.situacao}> {l.situacao}</span>}
                 </td>
                 <td>{l.partido}</td>
                 <td>{l.uf}</td>

@@ -335,6 +335,28 @@
   color: var(--nevoa);
 }
 
+.mandatoSenado {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.mandatoSenado span {
+  font-weight: 400;
+  color: var(--nevoa);
+}
+
+/* Marca de situação: só para a legislatura em curso ou futura. */
+.situacao {
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.5rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  color: var(--nevoa);
+  font-size: 0.8125rem;
+}
+
 .tabelaRolagem {
   overflow-x: auto;
 }

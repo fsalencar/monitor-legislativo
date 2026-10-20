@@ -9,6 +9,7 @@ export type Legislatura = {
   partido: string;
   uf: string;
   emExercicio: boolean;
+  situacao: "encerrada" | "em curso" | "futura";
 };
 
 export type VotoRegistrado = {
@@ -68,9 +69,20 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
   if (!p) return null;
 
   const legs = await sql<
-    { numero: number; data_inicio: Date; data_fim: Date | null; sigla_partido: string | null; uf: string | null; em_exercicio: boolean }[]
+    {
+      numero: number;
+      data_inicio: Date;
+      data_fim: Date | null;
+      sigla_partido: string | null;
+      uf: string | null;
+      em_exercicio: boolean;
+      situacao: Legislatura["situacao"];
+    }[]
   >`
-    select m.legislatura as numero, l.data_inicio, l.data_fim, m.sigla_partido, m.uf, m.em_exercicio
+    select m.legislatura as numero, l.data_inicio, l.data_fim, m.sigla_partido, m.uf, m.em_exercicio,
+           case when l.data_inicio > current_date then 'futura'
+                when l.data_fim < current_date then 'encerrada'
+                else 'em curso' end as situacao
     from mandato m join legislatura l on l.casa_id = m.casa_id and l.numero = m.legislatura
     where m.parlamentar_id = ${id}
     order by m.legislatura desc
@@ -103,6 +115,7 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
       partido: l.sigla_partido ?? SEM_PARTIDO,
       uf: l.uf ?? "",
       emExercicio: l.em_exercicio,
+      situacao: l.situacao,
     })),
     votos,
     totalVotos: Number(total),
