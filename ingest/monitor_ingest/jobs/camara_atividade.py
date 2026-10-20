@@ -37,12 +37,19 @@ def _deputados_da_legislatura(conn: psycopg.Connection) -> list[tuple[int, str]]
 def autorias(conn: psycopg.Connection, api: CamaraClient) -> int:
     n = 0
     tipos = ",".join(TIPOS)
-    for pid, dep in _deputados_da_legislatura(conn):
+    deputados = conn.execute(
+        """select p.id, p.id_fonte, p.nome from parlamentar p join mandato m on m.parlamentar_id = p.id
+           where m.casa_id = %s and m.legislatura = (select max(numero) from legislatura where casa_id = %s)""",
+        (CASA, CASA),
+    ).fetchall()
+    # Encerra a transação implícita da leitura: cada deputado grava na sua própria transação,
+    # sem segurar bloqueios nas proposições (que a ingestão de votações também atualiza).
+    conn.commit()
+    for pid, dep, nome in deputados:
         props = list(api.paginate("/proposicoes", {"idDeputadoAutor": dep, "siglaTipo": tipos,
                                                    "ordem": "DESC", "ordenarPor": "id"}))
         if not props:
             continue
-        nome = conn.execute("select nome from parlamentar where id = %s", (pid,)).fetchone()[0]
         with conn.transaction(), conn.cursor() as cur:
             cur.executemany(
                 """insert into proposicao (casa_id, id_fonte, sigla_tipo, numero, ano, ementa, url_fonte)
@@ -74,6 +81,7 @@ def _eh_saida(item: dict) -> bool:
 
 def afastamentos(conn: psycopg.Connection, api: CamaraClient) -> int:
     deps = _deputados_da_legislatura(conn)
+    conn.commit()  # não segura a transação de leitura durante as chamadas à API
     historicos = api.get_many([f"/deputados/{dep}/historico" for _, dep in deps], ignorar_404=True)
     linhas = []
     for (pid, dep), hist in zip(deps, historicos):
@@ -123,6 +131,7 @@ def _mapa_nome_uf(conn: psycopg.Connection) -> dict[tuple[str, str], int]:
 def presencas(conn: psycopg.Connection, desde: date, ate: date) -> int:
     http = httpx.Client(timeout=60, headers={"User-Agent": "monitor-legislativo (ingestao)"})
     por_carteira, por_nome = _mapa_carteira(conn, http), _mapa_nome_uf(conn)
+    conn.commit()  # cada dia grava na sua própria transação (ver autorias)
     n, sem_vinculo = 0, set()
     dia = desde
     while dia <= ate:
