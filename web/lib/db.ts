@@ -3,9 +3,10 @@ import postgres from "postgres";
 
 // Conexão só no servidor. prepare: false porque o pooler do Supabase não suporta prepared statements.
 // max baixo: o build pré-renderiza em vários processos e o modo session do pooler aceita só 15 clientes.
-// Funciona com o pooler em modo session (5432) ou transaction (6543). Os perfis não são
-// pré-renderizados no build (ver PARAMS_DE_BUILD em lib/perfil.ts): pré-renderizá-los com o
-// modo transaction travava o build de forma intermitente.
+// Use o pooler em modo SESSION (porta 5432), inclusive na Vercel. Com o modo transaction (6543),
+// o Next trava ~1 min na primeira leva de consultas de cada processo: o build falha com "use cache
+// took too long" e a primeira página de cada instância fica presa (reproduzido localmente; fora
+// do Next o mesmo cliente funciona). Os perfis não são pré-renderizados no build (PARAMS_DE_BUILD).
 const OCIOSO_S = 5;
 
 const cliente = postgres(process.env.DATABASE_URL!, {
