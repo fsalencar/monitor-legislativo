@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheDados } from "./cache";
 import { sql } from "./db";
 import { SEM_PARTIDO, type CasaId } from "./plenario";
 
@@ -67,7 +67,7 @@ export function idDoParametro(valor: string): number | null {
 
 export async function getIdsEmExercicio(): Promise<number[]> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   const rows = await sql<{ id: string }[]>`
     select distinct parlamentar_id as id from mandato where em_exercicio
   `;
@@ -76,7 +76,7 @@ export async function getIdsEmExercicio(): Promise<number[]> {
 
 export async function getPerfil(id: number): Promise<Perfil | null> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
 
   const [p] = await sql<
     {
@@ -151,7 +151,7 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
 // Câmara: todo mês (exceto janeiro, recesso) precisa ter votação carregada.
 export async function getCoberturaVotosCompleta(casa: CasaId): Promise<boolean> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   if (casa === "senado") {
     const [r] = await sql<{ ok: boolean }[]>`
       select exists (select 1 from ingestao_execucao where job = 'senado-votacoes-historico' and ok) as ok
@@ -215,7 +215,7 @@ const TIPOS_PROJETO = ["PL", "PLS", "PLP", "PEC", "MPV", "PLV", "PDL", "PDC", "P
 // com a contagem por desfecho sobre todos eles.
 export async function getAutorias(id: number): Promise<Autorias> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   const contagem = await sql<{ desfecho: Desfecho; n: string }[]>`
     select ${DESFECHO_SQL} as desfecho, count(*) as n
     from autoria a join proposicao pr on pr.id = a.proposicao_id
@@ -239,7 +239,7 @@ export async function getProjetosPagina(
   quantos: number | null,
 ): Promise<ProjetoAutoria[]> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   return consultarProjetos(id, desfecho, inicio, quantos);
 }
 
@@ -266,7 +266,7 @@ export type TempoAfastado = { legislatura: number; diasAfastado: number; diasDec
 // Senado: a data de fim é o último dia da licença (conta).
 export async function getTempoAfastado(id: number): Promise<TempoAfastado[]> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   const rows = await sql<{ legislatura: number; dias_afastado: number; dias_decorridos: number }[]>`
     with af as (
       select range_agg(daterange(a.data_inicio,
@@ -305,7 +305,7 @@ export type Presenca = {
 
 export async function getPresenca(id: number): Promise<Presenca> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   const [c] = await sql<{ sessoes: string; presencas: string; justificadas: string; ausencias: string; primeira: Date | null }[]>`
     select count(*) as sessoes,
            count(*) filter (where pe.situacao = 'Presença') as presencas,
@@ -336,7 +336,7 @@ export type Afastamento = { inicio: string; fim: string | null; motivo: string |
 
 export async function getAfastamentos(id: number): Promise<Afastamento[]> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   const rows = await sql<{ data_inicio: Date; data_fim: Date | null; motivo: string | null; url_fonte: string }[]>`
     select data_inicio, data_fim, motivo, url_fonte from afastamento
     where parlamentar_id = ${id} order by data_inicio desc
@@ -349,7 +349,7 @@ export async function getAfastamentos(id: number): Promise<Afastamento[]> {
 // Página de votos a partir de `inicio`; `quantos` null traz todos os restantes.
 export async function getVotosPagina(id: number, inicio: number, quantos: number | null): Promise<VotoRegistrado[]> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   return consultarVotos(id, quantos, inicio);
 }
 

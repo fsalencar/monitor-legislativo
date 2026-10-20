@@ -5,6 +5,8 @@ from pathlib import Path
 import psycopg
 from dotenv import load_dotenv
 
+from .site import avisar
+
 MIGRATIONS_DIR = Path(__file__).resolve().parents[2] / "db" / "migrations"
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
@@ -64,3 +66,4 @@ def execucao(conn: psycopg.Connection, job: str):
         (stats["registros"], run_id),
     )
     conn.commit()
+    avisar(forcar=True)

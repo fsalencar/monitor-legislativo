@@ -5,6 +5,7 @@ from contextlib import nullcontext
 from datetime import date, timedelta
 
 from . import db
+from .site import avisar
 from .camara import CamaraClient
 from .jobs import (camara_atividade, camara_deputados, camara_votacoes, estaduais, presidente, resumos,
                    senado_atividade, senado_senadores)
@@ -136,6 +137,7 @@ def main() -> None:
                        f"{sum(map(len, m.votos.values()))} votos, {len(m.proposicoes)} proposições")
                 if conn is not None:
                     stats["registros"] += camara_votacoes.gravar_mes(conn, m)
+                    avisar()
                 print(msg, f"({time.monotonic() - t0:.0f}s)", flush=True)
 
 

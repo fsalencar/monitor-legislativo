@@ -17,6 +17,7 @@ from google import genai
 from google.genai import errors, types
 
 from ..camara import CamaraClient
+from ..site import avisar
 
 MODELO = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
 INTERVALO = float(os.environ.get("RESUMOS_INTERVALO", "7"))  # ~8 pedidos por minuto
@@ -141,4 +142,5 @@ def gerar(conn: psycopg.Connection, limite: int, gravar: bool = True, minutos: f
                 (resumo, MODELO, item[5], item[0]),
             )
             conn.commit()
+            avisar()
     return feitos

@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheDados } from "./cache";
 import { sql } from "./db";
 
 import type { CasaId } from "./casas";
@@ -20,7 +20,7 @@ export const SEM_PARTIDO = "Sem partido";
 
 export async function getPlenario(casa: CasaId): Promise<Parlamentar[]> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
 
   const rows = await sql<
     {
@@ -60,7 +60,7 @@ function normalizaPartido(sigla: string | null): string {
 
 export async function getUltimaAtualizacao(): Promise<string | null> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   const [r] = await sql<{ quando: Date | null }[]>`
     select max(finalizado_em) as quando from ingestao_execucao where ok
   `;

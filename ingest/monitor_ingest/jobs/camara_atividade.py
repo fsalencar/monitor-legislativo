@@ -12,6 +12,7 @@ import httpx
 import psycopg
 
 from ..camara import CamaraClient
+from ..site import avisar
 from .resumos import TIPOS
 
 CASA = "camara"
@@ -69,6 +70,7 @@ def autorias(conn: psycopg.Connection, api: CamaraClient) -> int:
                 [(ids[str(p["id"])], pid, nome, URL_PROPOSICAO.format(p["id"])) for p in props],
             )
         n += len(props)
+        avisar()
     return n
 
 
@@ -102,6 +104,7 @@ def situacoes(conn: psycopg.Connection, api: CamaraClient, limite: int, dias: in
                    where id = %s""", linhas)
         n += len(linhas)
         print(f"  situações: {i + len(lote)}/{len(pendentes)}", flush=True)
+        avisar()
     return n
 
 
@@ -212,6 +215,7 @@ def presencas(conn: psycopg.Connection, desde: date, ate: date) -> int:
                 [(ids_sessao[desc], pid, sit, just) for desc, pid, sit, just in registros],
             )
         n += len(registros)
+        avisar()
     if sem_vinculo:
         print(f"AVISO: {len(sem_vinculo)} nomes sem vínculo com parlamentar (ex.: {sorted(sem_vinculo)[:3]})")
     return n

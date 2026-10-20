@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheDados } from "./cache";
 import { sql } from "./db";
 import { DESFECHO_SQL, type Desfecho } from "./perfil";
 
@@ -93,7 +93,7 @@ async function contar(grupo: Grupo): Promise<Record<string, number>> {
 
 export async function getPresidente(): Promise<DadosPresidente> {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   const grupos = await Promise.all(
     GRUPOS.map(async (g) => {
       const porCategoria = await contar(g);
@@ -124,7 +124,7 @@ export async function getPresidente(): Promise<DadosPresidente> {
 
 export async function getItensPresidencia(grupo: Grupo, cat: string | null, inicio: number, quantos: number | null) {
   "use cache";
-  cacheLife("hours");
+  cacheDados();
   return [...(await consultar(grupo, cat, inicio, quantos))];
 }
 

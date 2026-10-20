@@ -18,6 +18,9 @@ jobs:
     timeout-minutes: 90
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # Aviso ao site para mostrar os dados novos sem esperar o cache (opcional)
+      REVALIDAR_URL: ${{ secrets.REVALIDAR_URL }}
+      REVALIDAR_TOKEN: ${{ secrets.REVALIDAR_TOKEN }}
     defaults:
       run:
         working-directory: ingest
