@@ -175,3 +175,24 @@ h3 {
     animation: none !important;
   }
 }
+
+/* Bloco único de publicidade: no fim da página, separado dos dados e rotulado. */
+.anuncio {
+  margin-top: 4rem;
+  border-top: 1px solid var(--linha);
+  padding-block: 1.25rem 0.5rem;
+}
+
+.anuncio p {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  color: var(--nevoa-2);
+}
+
+.anuncio .adsbygoogle {
+  min-height: 90px;
+}
+
+.anuncio + .rodape {
+  margin-top: 1.5rem;
+}

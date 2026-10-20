@@ -1,7 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Libre_Caslon_Text } from "next/font/google";
 import Link from "next/link";
+import Script from "next/script";
+import Anuncio from "./Anuncio";
+import Rodape from "./Rodape";
 import "./globals.css";
+
+const ADSENSE = process.env.NEXT_PUBLIC_ADSENSE_CLIENT; // ca-pub-..., configurado na Vercel
 
 const ui = Atkinson_Hyperlegible({
   variable: "--fonte-ui",
@@ -43,10 +48,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </svg>
               Monitor Legislativo
             </Link>
-            <p>Dados oficiais do Congresso, sem opinião.</p>
+            <p>Dados oficiais do Congresso, sem opiniões pessoais ou manipulação de dados.</p>
           </div>
         </header>
         {children}
+        <Anuncio />
+        <Rodape />
+        {ADSENSE && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );
