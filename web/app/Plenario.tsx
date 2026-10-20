@@ -400,6 +400,14 @@ function Casa({
   );
 }
 
+type Coluna = "nome" | "partido" | "uf";
+
+const COLUNAS: { id: Coluna; titulo: string }[] = [
+  { id: "nome", titulo: "Nome" },
+  { id: "partido", titulo: "Partido" },
+  { id: "uf", titulo: "UF" },
+];
+
 function ListaCompleta({
   parlamentares,
   total,
@@ -409,6 +417,22 @@ function ListaCompleta({
   total: number;
   filtrando: boolean;
 }) {
+  const [ordem, setOrdem] = useState<{ coluna: Coluna; crescente: boolean }>({ coluna: "nome", crescente: true });
+
+  // Ordena pela coluna escolhida; empates ficam em ordem alfabética de nome.
+  const ordenados = useMemo(() => {
+    const sentido = ordem.crescente ? 1 : -1;
+    return [...parlamentares].sort(
+      (a, b) =>
+        sentido * a[ordem.coluna].localeCompare(b[ordem.coluna], "pt-BR") ||
+        a.nome.localeCompare(b.nome, "pt-BR"),
+    );
+  }, [parlamentares, ordem]);
+
+  function ordenarPor(coluna: Coluna) {
+    setOrdem((o) => ({ coluna, crescente: o.coluna === coluna ? !o.crescente : true }));
+  }
+
   return (
       <details className={styles.lista}>
         <summary>
@@ -418,15 +442,27 @@ function ListaCompleta({
           <table>
             <thead>
               <tr>
-                <th scope="col">Nome</th>
-                <th scope="col">Partido</th>
-                <th scope="col">UF</th>
+                {COLUNAS.map((c) => {
+                  const ativa = ordem.coluna === c.id;
+                  return (
+                    <th
+                      key={c.id}
+                      scope="col"
+                      aria-sort={ativa ? (ordem.crescente ? "ascending" : "descending") : "none"}
+                    >
+                      <button className={styles.ordenar} data-ativa={ativa || undefined} onClick={() => ordenarPor(c.id)}>
+                        {c.titulo}
+                        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" data-crescente={ativa ? ordem.crescente : undefined}>
+                          <path d="M2 6.5 5 3.5l3 3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
-              {[...parlamentares]
-                .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
-                .map((p) => (
+              {ordenados.map((p) => (
                   <tr key={p.id}>
                     <td>
                       <Link href={`/parlamentar/${p.id}`}>{p.nome}</Link>
