@@ -1,0 +1,118 @@
+:root {
+  color-scheme: light;
+  --fundo: #f5f6f4;
+  --superficie: #fcfcfb;
+  --tinta: #1d2125;
+  --tinta-2: #4f565c;
+  --tinta-3: #6c737a;
+  --linha: #d9dcd8;
+  --foco: #1f5fbf;
+
+  /* Paleta categórica validada (claro); ordem fixa, sem ciclar. */
+  --serie-1: #2a78d6;
+  --serie-2: #eb6834;
+  --serie-3: #1baf7a;
+  --serie-4: #eda100;
+  --serie-5: #e87ba4;
+  --serie-6: #008300;
+  --serie-7: #6250d6;
+  --serie-8: #e34948;
+  --serie-outros: #a3a29b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --fundo: #141514;
+    --superficie: #1a1a19;
+    --tinta: #eeefec;
+    --tinta-2: #c3c4bf;
+    --tinta-3: #9a9c97;
+    --linha: #34363a;
+    --foco: #7fb0f5;
+
+    --serie-1: #3987e5;
+    --serie-2: #d95926;
+    --serie-3: #199e70;
+    --serie-4: #c98500;
+    --serie-5: #d55181;
+    --serie-6: #008300;
+    --serie-7: #9085e9;
+    --serie-8: #e66767;
+    --serie-outros: #6b6a64;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+  font-family: var(--fonte), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  padding-inline: max(1rem, env(safe-area-inset-left));
+}
+
+body > * {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.18em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+.cabecalho {
+  padding-block: 2.5rem 1.75rem;
+}
+
+.cabecalho h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.cabecalho p {
+  margin: 0.5rem 0 0;
+  color: var(--tinta-2);
+  max-width: 40rem;
+}
+
+.rodape {
+  padding-block: 2.5rem 3rem;
+  color: var(--tinta-3);
+  font-size: 0.875rem;
+}
+
+.rodape p {
+  margin: 0.25rem 0;
+  max-width: 48rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
