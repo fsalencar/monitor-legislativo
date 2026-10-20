@@ -8,6 +8,7 @@ import { contarPartidos, ordenarCadeiras } from "@/lib/ordem";
 import { SIGLA_CASA, type Assembleia, type CasaId } from "@/lib/casas";
 import type { Parlamentar } from "@/lib/plenario";
 import styles from "./plenario.module.css";
+import { useNomeDigitado } from "./useNomeDigitado";
 
 type Aba = "estaduais" | "camara" | "senado" | "presidente";
 
@@ -229,6 +230,9 @@ function Casa({
       .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   }, [parlamentares]);
   const caixa = useRef<HTMLDivElement>(null);
+  const [focoNaBusca, setFocoNaBusca] = useState(false);
+  const nomes = useMemo(() => parlamentares.map((p) => p.nome), [parlamentares]);
+  const exemplo = useNomeDigitado(nomes, !focoNaBusca && busca === "");
 
   const partidos = useMemo(() => contarPartidos(parlamentares), [parlamentares]);
   const { cadeiras, raioPonto } = useMemo(() => layoutHemiciclo(parlamentares.length), [parlamentares.length]);
@@ -297,7 +301,9 @@ function Casa({
             type="search"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder={casa === "senado" ? "Ex.: Alan Rick" : casa === "camara" ? "Ex.: Tabata" : "Ex.: digite parte do nome"}
+            onFocus={() => setFocoNaBusca(true)}
+            onBlur={() => setFocoNaBusca(false)}
+            placeholder={focoNaBusca ? "Digite parte do nome" : `Ex.: ${exemplo}`}
             autoComplete="off"
           />
         </div>
