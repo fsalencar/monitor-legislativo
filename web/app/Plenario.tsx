@@ -17,6 +17,15 @@ const ABAS: { id: Aba; titulo: string; casa: string }[] = [
 ];
 
 const ABA_INICIAL: Aba = "camara";
+
+const NOME_UF: Record<string, string> = {
+  AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas", BA: "Bahia", CE: "Ceará",
+  DF: "Distrito Federal", ES: "Espírito Santo", GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso",
+  MS: "Mato Grosso do Sul", MG: "Minas Gerais", PA: "Pará", PB: "Paraíba", PR: "Paraná",
+  PE: "Pernambuco", PI: "Piauí", RJ: "Rio de Janeiro", RN: "Rio Grande do Norte",
+  RS: "Rio Grande do Sul", RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina", SP: "São Paulo",
+  SE: "Sergipe", TO: "Tocantins",
+};
 // Partidos visíveis na legenda antes de expandir.
 const LEGENDA_CURTA = 8;
 
@@ -131,6 +140,16 @@ function Casa({
 }) {
   const [hover, setHover] = useState<{ p: Parlamentar; x: number; y: number } | null>(null);
   const [legendaInteira, setLegendaInteira] = useState(false);
+  const [uf, setUf] = useState<string | null>(null);
+
+  // Estados presentes nesta casa, em ordem alfabética do nome, com o nº de cadeiras.
+  const ufs = useMemo(() => {
+    const cont = new Map<string, number>();
+    for (const p of parlamentares) if (p.uf) cont.set(p.uf, (cont.get(p.uf) ?? 0) + 1);
+    return [...cont.entries()]
+      .map(([sigla, cadeiras]) => ({ sigla, nome: NOME_UF[sigla] ?? sigla, cadeiras }))
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  }, [parlamentares]);
   const caixa = useRef<HTMLDivElement>(null);
 
   const partidos = useMemo(() => contarPartidos(parlamentares), [parlamentares]);
@@ -138,9 +157,11 @@ function Casa({
   const ordenados = useMemo(() => ordenarCadeiras(parlamentares, partidos), [parlamentares, partidos]);
 
   const termo = normaliza(busca.trim());
-  const filtrando = partido !== null || termo !== "";
+  const filtrando = partido !== null || uf !== null || termo !== "";
   const corresponde = (p: Parlamentar) =>
-    (partido === null || p.partido === partido) && (termo === "" || normaliza(p.nome).includes(termo));
+    (partido === null || p.partido === partido) &&
+    (uf === null || p.uf === uf) &&
+    (termo === "" || normaliza(p.nome).includes(termo));
   const correspondentes = ordenados.filter(corresponde);
 
   const atual = parlamentares.find((p) => p.id === selecionado) ?? null;
@@ -213,11 +234,23 @@ function Casa({
             ))}
           </select>
         </div>
+        <div className={styles.campo}>
+          <label htmlFor="filtro-uf">Estado</label>
+          <select id="filtro-uf" value={uf ?? ""} onChange={(e) => setUf(e.target.value || null)}>
+            <option value="">Todos os estados</option>
+            {ufs.map((u) => (
+              <option key={u.sigla} value={u.sigla}>
+                {u.nome} ({u.cadeiras})
+              </option>
+            ))}
+          </select>
+        </div>
         {filtrando && (
           <button
             className={styles.limpar}
             onClick={() => {
               setPartido(null);
+              setUf(null);
               setBusca("");
             }}
           >
@@ -313,7 +346,7 @@ function Casa({
           )}
           {filtrando && correspondentes.length === 0 && (
             <p className={styles.vazio}>
-              Ninguém corresponde a esses filtros. Confira a grafia do nome ou escolha outro partido.
+              Ninguém corresponde a esses filtros. Confira a grafia do nome ou escolha outro partido ou estado.
             </p>
           )}
           <ListaCompleta parlamentares={correspondentes} total={parlamentares.length} filtrando={filtrando} />
