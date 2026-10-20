@@ -203,3 +203,36 @@ h3 {
   max-width: 52rem;
   padding-block: 1rem 0;
 }
+
+/* Rodapé: convite para contribuir e links das páginas institucionais. */
+.rodapeApoio {
+  margin-bottom: 1rem !important;
+}
+
+.rodapeApoio a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--ambar);
+  border-radius: var(--raio);
+  color: var(--ambar);
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.rodapeApoio a:hover {
+  background: color-mix(in srgb, var(--ambar) 12%, transparent);
+}
+
+.rodapeLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-top: 0.75rem;
+}
+
+.rodapeLinks a {
+  color: var(--poeira);
+}

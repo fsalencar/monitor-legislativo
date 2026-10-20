@@ -1,0 +1,30 @@
+.pix {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pix code {
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--ceu);
+  font-size: 0.9375rem;
+  word-break: break-all;
+}
+
+.pix button {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border: 0;
+  border-radius: var(--raio);
+  background: var(--ambar);
+  color: var(--ceu);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pix button:hover {
+  background: #ffc68c;
+}
