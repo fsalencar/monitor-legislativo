@@ -1,0 +1,44 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-20T17:37:11.186Z",
+        "reason": "Claude: esboço de direção visual não escolhida na rodada de decisão; usa outras fontes de propósito e não é enviado ao site"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-20T17:37:11.355Z",
+        "reason": "Claude: esboço de direção visual não escolhida na rodada de decisão; usa outras fontes de propósito e não é enviado ao site"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-star-atlas.html"
+        ],
+        "createdAt": "2026-10-20T17:37:11.528Z",
+        "reason": "Claude: esboço de direção visual não escolhida na rodada de decisão; usa outras fontes de propósito e não é enviado ao site"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-split-flap.html"
+        ],
+        "createdAt": "2026-10-20T17:37:11.700Z",
+        "reason": "Claude: esboço de direção visual não escolhida na rodada de decisão; usa outras fontes de propósito e não é enviado ao site"
+      }
+    ]
+  }
+}
