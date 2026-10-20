@@ -1,4 +1,5 @@
-import type { Afastamento, Autorias, Desfecho, Presenca } from "@/lib/perfil";
+import { PROJETOS_POR_PAGINA, type Afastamento, type Autorias, type Presenca } from "@/lib/perfil";
+import { ProjetosLista } from "./projetos";
 import styles from "./perfil.module.css";
 
 const dataCurta = new Intl.DateTimeFormat("pt-BR", {
@@ -12,17 +13,11 @@ const dia = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", y
 const PRESENCA_SENADO =
   "A frequência por sessão do Senado ainda não foi carregada. Nas votações nominais acima, o registro de cada senador já indica presença, licença, missão ou ausência (veja o glossário dos votos).";
 
-const DESFECHO: Record<Desfecho, string> = {
-  lei: "Virou lei",
-  encerrado: "Arquivado, rejeitado ou retirado",
-  tramitando: "Em tramitação",
-  sem: "Situação não informada",
-};
-
 const numero = new Intl.NumberFormat("pt-BR");
 
-export function Autoria({ casa, autorias }: { casa: string; autorias: Autorias }) {
+export function Autoria({ id, casa, autorias }: { id: number; casa: string; autorias: Autorias }) {
   const { total, porDesfecho, projetos } = autorias;
+  const n = (x: number) => numero.format(x);
   return (
     <section className={styles.secao}>
       <h2>Projetos de autoria</h2>
@@ -33,42 +28,26 @@ export function Autoria({ casa, autorias }: { casa: string; autorias: Autorias }
       ) : (
         <>
           <p className={styles.nota}>
-            {numero.format(total)} {total === 1 ? "projeto" : "projetos"} em que é autor ou coautor (projetos de lei, de lei
-            complementar, propostas de emenda à Constituição e outros), do mais recente ao mais antigo.
-            {total > projetos.length && ` Aqui aparecem os ${projetos.length} mais recentes.`}
+            {n(total)} {total === 1 ? "projeto" : "projetos"} em que é autor ou coautor (projetos de lei, de lei
+            complementar, propostas de emenda à Constituição e outros), do mais recente ao mais antigo. Use os
+            filtros para ver cada grupo; a classificação segue a situação oficial de cada projeto.
           </p>
           <p className={styles.desfechoResumo}>
-            <strong>{numero.format(porDesfecho.lei)}</strong> {porDesfecho.lei === 1 ? "virou lei" : "viraram lei"} de{" "}
-            {numero.format(total)} apresentados.{" "}
+            <strong>{n(porDesfecho.lei)}</strong> {porDesfecho.lei === 1 ? "virou lei" : "viraram lei"} de {n(total)}{" "}
+            apresentados.{" "}
             <span>
-              {numero.format(porDesfecho.encerrado)} arquivados, rejeitados ou retirados;{" "}
-              {numero.format(porDesfecho.tramitando)} em tramitação
-              {porDesfecho.sem > 0 && `; ${numero.format(porDesfecho.sem)} sem situação informada pela fonte`}.
+              {n(porDesfecho.rejeitado)} {porDesfecho.rejeitado === 1 ? "rejeitado" : "rejeitados"};{" "}
+              {n(porDesfecho.arquivado)} arquivados ou retirados; {n(porDesfecho.tramitando)} em tramitação
+              {porDesfecho.sem > 0 && `; ${n(porDesfecho.sem)} sem situação informada pela fonte`}.
             </span>
           </p>
-          <ul className={styles.projetos}>
-            {projetos.map((pr) => (
-              <li key={pr.url}>
-                <p className={styles.projetoTopo}>
-                  <a href={pr.url} target="_blank" rel="noopener noreferrer" className={styles.prop}>
-                    {pr.sigla}
-                  </a>
-                  <span className={styles.desfecho} data-desfecho={pr.desfecho} title={pr.situacao ?? undefined}>
-                    {DESFECHO[pr.desfecho]}
-                  </span>
-                </p>
-                {pr.resumo ? (
-                  <>
-                    <p className={styles.resumo}>{pr.resumo}</p>
-                    <p className={styles.rotuloIa}>Resumo gerado por IA a partir da ementa oficial: {pr.ementa}</p>
-                  </>
-                ) : (
-                  pr.ementa && <p className={styles.ementa}>{pr.ementa}</p>
-                )}
-                {pr.situacao && <p className={styles.situacaoProjeto}>Situação oficial: {pr.situacao}</p>}
-              </li>
-            ))}
-          </ul>
+          <ProjetosLista
+            id={id}
+            total={total}
+            porDesfecho={porDesfecho}
+            iniciais={projetos}
+            porPagina={PROJETOS_POR_PAGINA}
+          />
         </>
       )}
     </section>

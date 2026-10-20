@@ -458,7 +458,7 @@
   font-weight: 700;
 }
 
-.desfecho[data-desfecho="encerrado"] {
+.desfecho[data-desfecho="arquivado"] {
   border: 1px solid var(--nevoa-2);
 }
 
@@ -634,4 +634,55 @@
   padding: 0.5rem 1rem 0.5rem 0;
   border-bottom: 1px solid var(--linha);
   white-space: nowrap;
+}
+
+/* Filtro de projetos por desfecho: botões de alternância com a contagem de cada grupo. */
+.filtrosProjeto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filtroProjeto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  background: var(--indigo);
+  color: var(--poeira);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: border-color 160ms ease-out;
+}
+
+.filtroProjeto span {
+  color: var(--nevoa);
+  font-variant-numeric: tabular-nums;
+}
+
+.filtroProjeto:hover {
+  border-color: var(--nevoa-2);
+}
+
+.filtroProjeto[aria-pressed="true"] {
+  border-color: var(--ambar);
+  color: var(--ambar);
+  font-weight: 700;
+}
+
+.filtroProjeto[aria-pressed="true"] span {
+  color: var(--ambar);
+}
+
+.projetos[data-carregando] {
+  opacity: 0.55;
+  transition: opacity 160ms ease-out;
+}
+
+.desfecho[data-desfecho="rejeitado"] {
+  border: 1px solid var(--nevoa-2);
+  color: var(--poeira);
 }

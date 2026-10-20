@@ -64,7 +64,7 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
         <div className={styles.principal}>
           <Cabecalho p={p} />
           <Votos p={p} cobertura={textoCobertura(completa)} />
-          <Autoria casa={p.casa} autorias={autoria} />
+          <Autoria id={p.id} casa={p.casa} autorias={autoria} />
           <PresencaSessoes casa={p.casa} presenca={presenca} />
           <Afastamentos casa={p.casa} afastamentos={afastamentos} tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)} />
           <Mandatos p={p} tempoAfastado={tempoAfastado} />

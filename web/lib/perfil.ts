@@ -175,16 +175,19 @@ export function textoCobertura(completa: boolean): string {
 }
 
 // Desfecho do projeto a partir da situação oficial (texto da fonte, Câmara ou Senado):
-// lei = virou norma jurídica; encerrado = arquivado, rejeitado, prejudicado, retirado, vetado...;
-// tramitando = qualquer outra situação; sem = a fonte não informou.
-export type Desfecho = "lei" | "encerrado" | "tramitando" | "sem";
+// lei = virou norma jurídica; rejeitado = rejeitado ou vetado integralmente; arquivado = arquivado,
+// retirado, prejudicado, perdeu a eficácia, tramitação encerrada...; tramitando = qualquer outra
+// situação; sem = a fonte não informou.
+export const DESFECHOS = ["lei", "rejeitado", "arquivado", "tramitando", "sem"] as const;
+export type Desfecho = (typeof DESFECHOS)[number];
 
 const DESFECHO_SQL = sql`
   case
     when pr.situacao ilike 'transformad% em norma%' then 'lei'
-    when pr.situacao ilike any (array['arquivad%', 'rejeitad%', 'prejudicad%', 'retirad%', 'perdeu a efic%',
-                                      'vetad%', 'devolvid%', 'tramitação encerrada%', 'transformad% em indica%',
-                                      'aguardando despacho de arquivamento%']) then 'encerrado'
+    when pr.situacao ilike any (array['rejeitad%', 'vetad%']) then 'rejeitado'
+    when pr.situacao ilike any (array['arquivad%', 'prejudicad%', 'retirad%', 'perdeu a efic%', 'devolvid%',
+                                      'tramitação encerrada%', 'transformad% em indica%',
+                                      'aguardando despacho de arquivamento%']) then 'arquivado'
     when pr.situacao is null then 'sem'
     else 'tramitando'
   end`;
@@ -204,7 +207,7 @@ export type Autorias = {
   projetos: ProjetoAutoria[];
 };
 
-const LIMITE_AUTORIAS = 15;
+export const PROJETOS_POR_PAGINA = 15;
 const TIPOS_PROJETO = ["PL", "PLS", "PLP", "PEC", "MPV", "PLV", "PDL", "PDC", "PDS", "PRC", "PRS", "PLN"];
 
 // Projetos em que o parlamentar é autor ou coautor, dos mais recentes aos mais antigos,
@@ -218,21 +221,41 @@ export async function getAutorias(id: number): Promise<Autorias> {
     where a.parlamentar_id = ${id} and pr.sigla_tipo = any(${TIPOS_PROJETO})
     group by 1
   `;
-  const rows = await sql<ProjetoAutoria[]>`
-    select pr.sigla_tipo || ' ' || pr.numero || '/' || pr.ano as sigla, pr.ementa,
-           pr.resumo_simples as resumo, pr.situacao, ${DESFECHO_SQL} as desfecho, pr.url_fonte as url
-    from autoria a join proposicao pr on pr.id = a.proposicao_id
-    where a.parlamentar_id = ${id} and pr.sigla_tipo = any(${TIPOS_PROJETO})
-    order by pr.ano desc nulls last, pr.numero desc nulls last
-    limit ${LIMITE_AUTORIAS}
-  `;
-  const porDesfecho: Record<Desfecho, number> = { lei: 0, encerrado: 0, tramitando: 0, sem: 0 };
+  const porDesfecho = Object.fromEntries(DESFECHOS.map((d) => [d, 0])) as Record<Desfecho, number>;
   for (const c of contagem) porDesfecho[c.desfecho] = Number(c.n);
   return {
     total: Object.values(porDesfecho).reduce((a, b) => a + b, 0),
     porDesfecho,
-    projetos: rows.map((r) => ({ ...r })),
+    projetos: await consultarProjetos(id, null, 0, PROJETOS_POR_PAGINA),
   };
+}
+
+// Página de projetos de autoria, opcionalmente só de um desfecho; `quantos` null traz todos.
+export async function getProjetosPagina(
+  id: number,
+  desfecho: Desfecho | null,
+  inicio: number,
+  quantos: number | null,
+): Promise<ProjetoAutoria[]> {
+  "use cache";
+  cacheLife("hours");
+  return consultarProjetos(id, desfecho, inicio, quantos);
+}
+
+async function consultarProjetos(id: number, desfecho: Desfecho | null, inicio: number, quantos: number | null) {
+  const rows = await sql<ProjetoAutoria[]>`
+    select * from (
+      select pr.sigla_tipo || ' ' || pr.numero || '/' || pr.ano as sigla, pr.ementa,
+             pr.resumo_simples as resumo, pr.situacao, ${DESFECHO_SQL} as desfecho, pr.url_fonte as url,
+             pr.ano, pr.numero, pr.id
+      from autoria a join proposicao pr on pr.id = a.proposicao_id
+      where a.parlamentar_id = ${id} and pr.sigla_tipo = any(${TIPOS_PROJETO})
+    ) x
+    where ${desfecho}::text is null or x.desfecho = ${desfecho}
+    order by x.ano desc nulls last, x.numero desc nulls last, x.id desc
+    limit ${quantos} offset ${inicio}
+  `;
+  return rows.map(({ sigla, ementa, resumo, situacao, desfecho, url }) => ({ sigla, ementa, resumo, situacao, desfecho, url }));
 }
 
 export type TempoAfastado = { legislatura: number; diasAfastado: number; diasDecorridos: number };
