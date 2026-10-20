@@ -24,6 +24,10 @@ const ASSEMBLEIAS: { id: Assembleia; uf: string; estado: string }[] = [
   { id: "al-mg", uf: "MG", estado: "Minas Gerais" },
 ];
 
+// Unidades da federação com Assembleia (ou Câmara Legislativa, no DF): 26 estados + DF.
+const TOTAL_UFS = 27;
+const PERCENTUAL_ESTADOS = Math.round((ASSEMBLEIAS.length / TOTAL_UFS) * 100);
+
 const ABA_INICIAL: Aba = "camara";
 
 const NOME_UF: Record<string, string> = {
@@ -118,7 +122,7 @@ export default function Plenario({
         {ABAS.map((a) => {
           const detalhe =
             a.id === "estaduais"
-              ? ASSEMBLEIAS.map((x) => x.uf).join(" e ")
+              ? `${ASSEMBLEIAS.map((x) => x.uf).join(" e ")} · ${PERCENTUAL_ESTADOS}% dos estados`
               : a.id === "presidente"
                 ? "Mandato atual"
                 : `${casas[a.id].length} cadeiras`;
@@ -151,7 +155,24 @@ export default function Plenario({
               {a.estado} <span>{casas[a.id].length} cadeiras</span>
             </button>
           ))}
-          <p>Outros estados entram aos poucos, conforme as Assembleias publicam dados abertos.</p>
+          <div className={styles.cobertura}>
+            <p>
+              <strong>
+                {ASSEMBLEIAS.length} de {TOTAL_UFS} estados disponíveis ({PERCENTUAL_ESTADOS}%)
+              </strong>
+              . Outros estados entram aos poucos, conforme as Assembleias publicam dados abertos.
+            </p>
+            <div
+              className={styles.barraCobertura}
+              role="progressbar"
+              aria-label="Estados disponíveis para consulta"
+              aria-valuemin={0}
+              aria-valuemax={TOTAL_UFS}
+              aria-valuenow={ASSEMBLEIAS.length}
+            >
+              <span style={{ width: `${PERCENTUAL_ESTADOS}%` }} />
+            </div>
+          </div>
         </div>
       )}
 
@@ -246,7 +267,7 @@ function Casa({
     if (alvo) setSelecionado(ordenados[Number(alvo.getAttribute("data-i"))].id);
   }
 
-  const titulo = casa === "senado" ? "senadores" : casa === "camara" ? "deputados" : "deputados estaduais";
+  const titulo = casa === "senado" ? "senadores" : casa === "camara" ? "deputados federais" : "deputados estaduais";
   const nomeCasa = SIGLA_CASA[casa].nome;
   const mira = idxAtual >= 0 ? cadeiras[idxAtual] : null;
   const rotulo = mira ? pct(mira.x, -mira.y) : null;

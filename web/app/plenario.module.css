@@ -681,11 +681,37 @@
   margin-top: -0.5rem;
 }
 
-.assembleias p {
-  margin: 0;
+/* Cobertura: quantos estados já estão disponíveis (barra neutra, sem meta). */
+.cobertura {
   width: 100%;
-  color: var(--nevoa-2);
+  display: grid;
+  gap: 0.4rem;
+  max-width: 40rem;
+}
+
+.cobertura p {
+  margin: 0;
+  color: var(--nevoa);
   font-size: 0.875rem;
+}
+
+.cobertura strong {
+  color: var(--poeira);
+  font-variant-numeric: tabular-nums;
+}
+
+.barraCobertura {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--linha);
+  overflow: hidden;
+}
+
+.barraCobertura span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ambar);
 }
 
 .assembleia {
