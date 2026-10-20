@@ -6,7 +6,7 @@ from datetime import date, timedelta
 
 from . import db
 from .camara import CamaraClient
-from .jobs import camara_deputados, camara_votacoes, senado_senadores
+from .jobs import camara_deputados, camara_votacoes, resumos, senado_senadores
 
 
 def main() -> None:
@@ -23,7 +23,21 @@ def main() -> None:
     vot.add_argument("--ate", type=date.fromisoformat, default=date.today())
     vot.add_argument("--dry-run", action="store_true", help="só coleta, não grava")
     sub.add_parser("senado-senadores", help="senadores em exercício e seus mandatos")
+    res = sub.add_parser("resumos", help="resumo em linguagem simples (IA) das proposições principais")
+    res.add_argument("--limite", type=int, default=200, help="máximo de proposições nesta execução")
+    res.add_argument("--dry-run", action="store_true", help="só mostra os resumos, não grava")
     args = p.parse_args()
+
+    if args.cmd == "resumos":
+        with db.connect() as conn:
+            if args.dry_run:
+                for item, resumo in resumos.gerar(conn, args.limite, gravar=False):
+                    print(f"\n{item[2]} {item[3]}/{item[4]}\n  ementa: {item[5]}\n  resumo: {resumo}")
+                return
+            with db.execucao(conn, "resumos") as stats:
+                stats["registros"] = len(resumos.gerar(conn, args.limite))
+        print(f"gerados {stats['registros']} resumos")
+        return
 
     if args.cmd == "senado-senadores":
         senadores = senado_senadores.coletar()

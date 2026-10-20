@@ -16,6 +16,8 @@ jobs:
   deputados:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     defaults:
       run:
         working-directory: ingest
@@ -37,5 +39,9 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: python -m monitor_ingest senado-senadores
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest resumos --limite 300
+        if: env.ANTHROPIC_API_KEY != ''
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

@@ -309,6 +309,65 @@
   overflow: hidden;
 }
 
+/* Sobre o projeto: resumo simples (rotulado como IA), ementa oficial e ficha. */
+.sobre {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.2rem;
+  max-width: 68ch;
+}
+
+.resumo {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.rotuloIa {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--nevoa-2);
+}
+
+.ementaOficial {
+  margin: 0.15rem 0 0;
+  font-size: 0.875rem;
+  color: var(--nevoa);
+}
+
+.ementaOficial span {
+  color: var(--nevoa-2);
+}
+
+.fichaProjeto {
+  margin: 0.2rem 0 0;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.875rem;
+}
+
+.fichaProjeto div {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 34rem) {
+  .fichaProjeto div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+.fichaProjeto dt {
+  color: var(--nevoa-2);
+}
+
+.fichaProjeto dd {
+  margin: 0;
+  color: var(--nevoa);
+}
+
 .votoRodape {
   margin: 0.2rem 0 0;
   color: var(--nevoa);

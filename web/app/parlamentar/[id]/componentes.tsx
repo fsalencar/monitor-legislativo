@@ -2,7 +2,7 @@ import Link from "next/link";
 import { corDoPartido } from "@/lib/cores";
 import { layoutHemiciclo } from "@/lib/hemiciclo";
 import { contarPartidos, ordenarCadeiras } from "@/lib/ordem";
-import type { VotoRegistrado } from "@/lib/perfil";
+import type { ProposicaoVotada, VotoRegistrado } from "@/lib/perfil";
 import { getPlenario, type CasaId } from "@/lib/plenario";
 import styles from "./perfil.module.css";
 
@@ -41,7 +41,7 @@ export function ListaVotos({ votos, partidoAtual }: { votos: VotoRegistrado[]; p
                 ))}
               </p>
               {v.descricao && <p className={styles.votoDescricao}>{v.descricao}</p>}
-              {v.proposicoes[0]?.ementa && <p className={styles.ementa}>{v.proposicoes[0].ementa}</p>}
+              <SobreProjeto p={principal(v.proposicoes)} />
               <p className={styles.votoRodape}>
                 {v.partidoNoVoto && v.partidoNoVoto !== partidoAtual && <span>Partido na data: {v.partidoNoVoto}. </span>}
                 <a href={v.urlFonte} target="_blank" rel="noopener noreferrer">
@@ -63,6 +63,66 @@ export function ListaVotos({ votos, partidoAtual }: { votos: VotoRegistrado[]; p
         </dl>
       )}
     </>
+  );
+}
+
+// Tipos que são o projeto em si; requerimentos, pareceres e emendas são etapas da tramitação.
+const TIPOS_PRINCIPAIS = new Set(["PL", "PLP", "PEC", "MPV", "PLV", "PDL", "PDC", "PRC", "PLN"]);
+
+function principal(proposicoes: ProposicaoVotada[]): ProposicaoVotada | null {
+  return proposicoes.find((p) => TIPOS_PRINCIPAIS.has(p.tipo)) ?? proposicoes[0] ?? null;
+}
+
+function SobreProjeto({ p }: { p: ProposicaoVotada | null }) {
+  if (!p || (!p.ementa && !p.resumo)) return null;
+  const temas = p.temas
+    ?.split(/[,;]/)
+    .map((t) => t.trim().replace(/\.$/, ""))
+    .filter(Boolean)
+    .slice(0, 6);
+  return (
+    <div className={styles.sobre}>
+      {p.resumo && (
+        <>
+          <p className={styles.resumo}>{p.resumo}</p>
+          <p className={styles.rotuloIa}>
+            Resumo em linguagem simples, gerado por IA a partir da ementa oficial abaixo.
+          </p>
+        </>
+      )}
+      {p.ementa && (
+        <p className={p.resumo ? styles.ementaOficial : styles.ementa}>
+          {p.resumo && <span>Ementa oficial ({p.sigla}): </span>}
+          {p.ementa}
+        </p>
+      )}
+      {(temas?.length || p.situacao || p.urlTexto) && (
+        <dl className={styles.fichaProjeto}>
+          {temas && temas.length > 0 && (
+            <div>
+              <dt>Temas</dt>
+              <dd>{temas.join(", ")}</dd>
+            </div>
+          )}
+          {p.situacao && (
+            <div>
+              <dt>Situação atual</dt>
+              <dd>{p.situacao}</dd>
+            </div>
+          )}
+          {p.urlTexto && (
+            <div>
+              <dt>Texto</dt>
+              <dd>
+                <a href={p.urlTexto} target="_blank" rel="noopener noreferrer">
+                  Ler o texto integral
+                </a>
+              </dd>
+            </div>
+          )}
+        </dl>
+      )}
+    </div>
   );
 }
 

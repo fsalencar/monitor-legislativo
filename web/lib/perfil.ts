@@ -12,6 +12,18 @@ export type Legislatura = {
   situacao: "encerrada" | "em curso" | "futura";
 };
 
+export type ProposicaoVotada = {
+  tipo: string;
+  sigla: string;
+  ementa: string | null;
+  // Resumo em linguagem simples gerado por IA; sempre exibido rotulado e ao lado da ementa oficial.
+  resumo: string | null;
+  temas: string | null;
+  situacao: string | null;
+  url: string;
+  urlTexto: string | null;
+};
+
 export type VotoRegistrado = {
   votacaoId: number;
   dataHora: string | null;
@@ -21,7 +33,7 @@ export type VotoRegistrado = {
   voto: string;
   partidoNoVoto: string | null;
   urlFonte: string;
-  proposicoes: { sigla: string; ementa: string | null; url: string }[];
+  proposicoes: ProposicaoVotada[];
 };
 
 export type Perfil = {
@@ -161,14 +173,17 @@ async function consultarVotos(id: number, limite: number | null): Promise<VotoRe
       voto: string;
       sigla_partido: string | null;
       url_fonte: string;
-      proposicoes: { sigla: string; ementa: string | null; url: string }[] | null;
+      proposicoes: ProposicaoVotada[] | null;
     }[]
   >`
     select v.id as votacao_id, v.data_hora, v.descricao, v.sigla_orgao, v.aprovacao,
            vo.voto, vo.sigla_partido, v.url_fonte,
            (select json_agg(json_build_object(
+                     'tipo', pr.sigla_tipo,
                      'sigla', pr.sigla_tipo || ' ' || pr.numero || '/' || pr.ano,
-                     'ementa', pr.ementa, 'url', pr.url_fonte) order by pr.ano, pr.numero)
+                     'ementa', pr.ementa, 'resumo', pr.resumo_simples, 'temas', pr.palavras_chave,
+                     'situacao', pr.situacao, 'url', pr.url_fonte, 'urlTexto', pr.url_inteiro_teor)
+                     order by pr.ano, pr.numero)
               from votacao_proposicao vp join proposicao pr on pr.id = vp.proposicao_id
              where vp.votacao_id = v.id) as proposicoes
     from voto vo join votacao v on v.id = vo.votacao_id

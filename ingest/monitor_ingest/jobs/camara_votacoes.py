@@ -83,17 +83,19 @@ def gravar_mes(conn: psycopg.Connection, m: Mes) -> int:
         # Proposições
         cur.executemany(
             """insert into proposicao (casa_id, id_fonte, sigla_tipo, numero, ano, ementa,
-                                       data_apresentacao, situacao, url_inteiro_teor, url_fonte)
-               values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                       data_apresentacao, situacao, url_inteiro_teor, palavras_chave,
+                                       url_fonte)
+               values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                on conflict (casa_id, id_fonte) do update set
                  sigla_tipo = excluded.sigla_tipo, numero = excluded.numero, ano = excluded.ano,
                  ementa = excluded.ementa, data_apresentacao = excluded.data_apresentacao,
                  situacao = excluded.situacao, url_inteiro_teor = excluded.url_inteiro_teor,
+                 palavras_chave = excluded.palavras_chave,
                  atualizado_em = now()""",
             [(CASA, str(pid), p["siglaTipo"], p.get("numero"), p.get("ano"), p.get("ementa"),
               (p.get("dataApresentacao") or "")[:10] or None,
               (p.get("statusProposicao") or {}).get("descricaoSituacao"),
-              p.get("urlInteiroTeor"), URL_PROPOSICAO.format(pid))
+              p.get("urlInteiroTeor"), p.get("keywords") or None, URL_PROPOSICAO.format(pid))
              for pid, p in m.proposicoes.items()],
         )
         n += len(m.proposicoes)
