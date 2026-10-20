@@ -8,10 +8,11 @@ Site apartidário de transparência legislativa: quem ocupa cada cadeira na Câm
 
 ## Ingestão local
 ```sh
-cp .env.example .env          # preencha DATABASE_URL
+# crie .env na raiz com DATABASE_URL=<connection string do Session pooler do Supabase>
 cd ingest
 python -m venv .venv && .venv/Scripts/pip install -r requirements.txt   # Linux/mac: .venv/bin/pip
 .venv/Scripts/python -m monitor_ingest migrate
 .venv/Scripts/python -m monitor_ingest camara-deputados --historico     # primeira carga
 .venv/Scripts/python -m monitor_ingest camara-deputados --dry-run       # só coleta, não grava
+.venv/Scripts/python -m monitor_ingest camara-votacoes --desde 2023-02-01  # votações (padrão: últimos 30 dias)
 ```

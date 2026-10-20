@@ -33,3 +33,6 @@ jobs:
       - run: python -m monitor_ingest camara-deputados ${{ inputs.historico && '--historico' || '' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest camara-votacoes
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

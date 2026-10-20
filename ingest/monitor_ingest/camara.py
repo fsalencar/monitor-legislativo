@@ -43,7 +43,16 @@ class CamaraClient:
             url = next((l["href"] for l in body.get("links", []) if l["rel"] == "next"), None)
             params = None  # o href de next já traz os parâmetros
 
-    def get_many(self, paths: list[str]) -> list[dict]:
-        """Busca vários recursos em paralelo; retorna 'dados' de cada um, na mesma ordem."""
+    def get_many(self, paths: list[str], ignorar_404: bool = False) -> list:
+        """Busca vários recursos em paralelo; retorna 'dados' de cada um, na mesma ordem.
+        Com ignorar_404, recursos inexistentes viram None."""
+        def um(p: str):
+            try:
+                return self.get(p)["dados"]
+            except httpx.HTTPStatusError as e:
+                if ignorar_404 and e.response.status_code == 404:
+                    return None
+                raise
+
         with ThreadPoolExecutor(self.workers) as pool:
-            return list(pool.map(lambda p: self.get(p)["dados"], paths))
+            return list(pool.map(um, paths))

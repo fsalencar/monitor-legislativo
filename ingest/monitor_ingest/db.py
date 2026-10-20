@@ -15,7 +15,11 @@ def connect() -> psycopg.Connection:
     if not url:
         raise SystemExit("DATABASE_URL não definida (veja .env.example)")
     # prepare_threshold=None: o pooler do Supabase não suporta prepared statements.
-    return psycopg.connect(url, prepare_threshold=None)
+    conn = psycopg.connect(url, prepare_threshold=None)
+    # As APIs dão data/hora local sem fuso; o fuso da sessão resolve inclusive o antigo horário de verão.
+    conn.execute("set timezone to 'America/Sao_Paulo'")
+    conn.commit()
+    return conn
 
 
 def migrate() -> list[str]:
