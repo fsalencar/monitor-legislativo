@@ -8,7 +8,9 @@ export async function POST(request: Request) {
   if (!token || request.headers.get("authorization") !== `Bearer ${token}`) {
     return Response.json({ erro: "não autorizado" }, { status: 401 });
   }
-  // "max": quem chegar logo depois ainda recebe a versão anterior enquanto a nova é gerada.
-  revalidateTag(TAG_DADOS, "max");
+  // Expira na hora: a próxima visita gera a página de novo (rápido). Com "max" (servir a versão
+  // anterior e regenerar em segundo plano), a resposta na Vercel ficava presa até a regeneração
+  // terminar, e as páginas demoravam até 1 min depois de cada aviso.
+  revalidateTag(TAG_DADOS, { expire: 0 });
   return Response.json({ ok: true, revalidado: TAG_DADOS, em: new Date().toISOString() });
 }
