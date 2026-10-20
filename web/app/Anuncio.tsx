@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-
-const CLIENTE = process.env.NEXT_PUBLIC_ADSENSE_CLIENT; // ca-pub-...
-const BLOCO = process.env.NEXT_PUBLIC_ADSENSE_SLOT; // id do bloco de anúncio
+import { ADSENSE_BLOCO as BLOCO, ADSENSE_CLIENTE as CLIENTE } from "@/lib/adsense";
 
 declare global {
   interface Window {

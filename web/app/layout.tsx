@@ -4,9 +4,8 @@ import Link from "next/link";
 import Script from "next/script";
 import Anuncio from "./Anuncio";
 import Rodape from "./Rodape";
+import { ADSENSE_CLIENTE as ADSENSE } from "@/lib/adsense";
 import "./globals.css";
-
-const ADSENSE = process.env.NEXT_PUBLIC_ADSENSE_CLIENT; // ca-pub-..., configurado na Vercel
 
 const ui = Atkinson_Hyperlegible({
   variable: "--fonte-ui",
