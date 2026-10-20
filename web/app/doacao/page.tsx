@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CHAVE_PIX, LINK_APOIO, TITULAR_PIX } from "@/lib/doacao";
 import styles from "../textos.module.css";
 import CopiarPix from "./CopiarPix";
+import estilos from "./doacao.module.css";
 
 export const metadata: Metadata = {
   title: "Ajude o projeto | Monitor Legislativo",
@@ -24,26 +25,27 @@ export default function Doacao() {
 
       <h2>Como contribuir</h2>
       {temForma ? (
-        <>
+        <div className={estilos.opcoes}>
           {CHAVE_PIX && (
-            <div className={styles.destaque}>
+            <section className={estilos.opcao}>
+              <h3>Pix direto</h3>
               <p>
-                <strong>Pix</strong>
-                {TITULAR_PIX && <> (em nome de {TITULAR_PIX})</>}
+                Copie a chave e cole no app do seu banco, na opção Pix com chave aleatória. O valor chega
+                inteiro, sem taxas{TITULAR_PIX && <>, em nome de {TITULAR_PIX}</>}.
               </p>
               <CopiarPix chave={CHAVE_PIX} />
-            </div>
+            </section>
           )}
           {LINK_APOIO && (
-            <p>
-              Prefere cartão ou apoio mensal?{" "}
-              <a href={LINK_APOIO.url} target="_blank" rel="noopener noreferrer">
-                Contribua pelo {LINK_APOIO.nome}
+            <section className={estilos.opcao}>
+              <h3>Cartão ou Pix pelo {LINK_APOIO.nome}</h3>
+              <p>Pague com cartão de crédito, débito ou Pix pela página segura do {LINK_APOIO.nome}.</p>
+              <a href={LINK_APOIO.url} target="_blank" rel="noopener noreferrer" className={estilos.botao}>
+                Contribuir pelo {LINK_APOIO.nome}
               </a>
-              .
-            </p>
+            </section>
           )}
-        </>
+        </div>
       ) : (
         <div className={styles.destaque}>
           <p>As formas de contribuição estarão disponíveis em breve.</p>

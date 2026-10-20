@@ -28,3 +28,49 @@
 .pix button:hover {
   background: #ffc68c;
 }
+
+/* Duas formas de contribuir, lado a lado (empilham no celular). */
+.opcoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.opcao {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  padding: 1.1rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--indigo);
+}
+
+.opcao h3 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.opcao p {
+  margin: 0;
+  color: var(--nevoa);
+  font-size: 0.9375rem;
+}
+
+.botao {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--raio);
+  background: var(--ambar);
+  color: var(--ceu) !important;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.botao:hover {
+  background: #ffc68c;
+}
