@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T00:00:00Z",
+  "title": "Design System: Monitor Legislativo",
+  "extensions": {
+    "colorMeta": {
+      "ambar": { "role": "primary", "displayName": "Âmbar de Farol", "canonical": "#ffb36b", "tonalRamp": ["#4c3620", "#805a36", "#b27d4b", "#e09e5e", "#ffb36b", "#ffca97", "#ffddbc", "#fff0e1"] },
+      "lanterna": { "role": "secondary", "displayName": "Vermelho-Lanterna", "canonical": "#ff5a3c", "tonalRamp": ["#4c1b12", "#802d1e", "#b23f2a", "#e04f35", "#ff5a3c", "#ff8c76", "#ffb5a7", "#ffded8"] },
+      "ceu": { "role": "neutral", "displayName": "Céu Noturno", "canonical": "#0a1021", "tonalRamp": ["#03050a", "#050810", "#070b17", "#090e1d", "#0a1021", "#545864", "#91939b", "#cecfd3"] },
+      "indigo": { "role": "neutral", "displayName": "Índigo", "canonical": "#16233d", "tonalRamp": ["#070a12", "#0b121e", "#0f182b", "#131f36", "#16233d", "#5c6577", "#969ca8", "#d0d3d8"] },
+      "indigo-2": { "role": "neutral", "displayName": "Índigo Alto", "canonical": "#1c2b49", "tonalRamp": ["#080d16", "#0e1624", "#141e33", "#192640", "#1c2b49", "#606b80", "#99a0ad", "#d2d5db"] },
+      "linha": { "role": "neutral", "displayName": "Fio de Carta", "canonical": "#24374f", "tonalRamp": ["#0b1018", "#121c28", "#192637", "#203046", "#24374f", "#667384", "#9ca5b0", "#d3d7dc"] },
+      "linha-forte": { "role": "neutral", "displayName": "Fio Forte", "canonical": "#34496a", "tonalRamp": ["#101620", "#1a2435", "#24334a", "#2e405d", "#34496a", "#718097", "#a4adbc", "#d6dbe1"] },
+      "poeira": { "role": "neutral", "displayName": "Poeira Estelar", "canonical": "#f2f2e9", "tonalRamp": ["#494946", "#797974", "#a9a9a3", "#d5d5cd", "#f2f2e9", "#f6f6f0", "#f9f9f5", "#fcfcfb"] },
+      "nevoa": { "role": "neutral", "displayName": "Névoa Clara", "canonical": "#9aa6bd", "tonalRamp": ["#2e3239", "#4d535e", "#6c7484", "#8892a6", "#9aa6bd", "#b8c1d1", "#d2d7e1", "#ebedf2"] },
+      "nevoa-2": { "role": "neutral", "displayName": "Névoa Funda", "canonical": "#8a96ad", "tonalRamp": ["#292d34", "#454b56", "#616979", "#798498", "#8a96ad", "#adb6c6", "#cad0da", "#e8eaef"] },
+      "sem-identidade": { "role": "neutral", "displayName": "Sem Identidade", "canonical": "#6b7385", "tonalRamp": ["#202228", "#363a42", "#4b505d", "#5e6575", "#6b7385", "#979daa", "#bcc0c8", "#e1e3e7"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Nome do parlamentar no topo do perfil (Caslon itálico)." },
+      "headline": { "displayName": "Headline", "purpose": "Nome da casa no plenário; variante menor no título da página de votos." },
+      "title-nome": { "displayName": "Título-nome", "purpose": "Nome no cartão do selecionado e no rótulo de coordenadas." },
+      "title": { "displayName": "Title", "purpose": "Títulos de seção do perfil, Atkinson 700." },
+      "body": { "displayName": "Body", "purpose": "Texto corrente e campos; descrições até 68ch." },
+      "body-sm": { "displayName": "Body pequeno", "purpose": "Tabelas, legenda, glossário, selos de voto." },
+      "label": { "displayName": "Label", "purpose": "Rótulos de campo, metadados, rodapé." },
+      "caption": { "displayName": "Caption", "purpose": "Cabeçalhos de tabela, detalhe da aba, coordenadas; tabular." }
+    },
+    "partyColors": {
+      "source": "web/lib/cores.ts (COR_PARTIDO)",
+      "note": "Decisão do usuário: cor mais próxima da identidade de cada partido, ajustada para não repetir e para ler sobre o céu. Dados, não paleta de interface.",
+      "fallback": "#6b7385"
+    },
+    "shadows": [
+      { "name": "sombra", "value": "0 10px 30px -12px rgb(0 0 0 / 0.6)", "purpose": "Única sombra: cartão do selecionado, tooltip, rótulo de coordenadas, foto do perfil." },
+      { "name": "halo-foco", "value": "0 0 0 3px color-mix(in srgb, var(--ambar) 28%, transparent)", "purpose": "Campos em foco, junto da borda âmbar." }
+    ],
+    "motion": [
+      { "name": "estado", "value": "160ms ease-out", "purpose": "Cor, borda e fundo de abas, campos, botões; giro do chevron de details." },
+      { "name": "apagar", "value": "opacity 200ms ease-out", "purpose": "Cadeiras entrando e saindo do recorte do filtro." },
+      { "name": "mirar", "value": "260ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Entrada da mira: escala 1.6 → 1 com fade." },
+      { "name": "reduzido", "value": "prefers-reduced-motion: transition/animation none", "purpose": "Todo movimento desligado sob movimento reduzido." }
+    ],
+    "breakpoints": [
+      { "name": "estreito", "value": "34rem" },
+      { "name": "barra", "value": "40rem" },
+      { "name": "coluna-unica", "value": "56rem" },
+      { "name": "moldura-max", "value": "76rem" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão primário",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal (Ver atividade): âmbar cheio, texto céu.",
+      "html": "<a class=\"ds-btn-primario\" href=\"#\">Ver atividade</a>",
+      "css": ".ds-btn-primario { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0.5rem 1.1rem; border-radius: 6px; background: var(--ambar, #ffb36b); color: var(--ceu, #0a1021); font-family: var(--fonte-ui), 'Atkinson Hyperlegible', system-ui, sans-serif; font-weight: 700; text-decoration: none; transition: background-color 160ms ease-out; } .ds-btn-primario:hover { background: #ffc68c; } .ds-btn-primario:focus-visible { outline: 2px solid var(--ambar, #ffb36b); outline-offset: 3px; }"
+    },
+    {
+      "name": "Botão contorno",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Ação secundária (Ver todos os votos): borda e texto âmbar.",
+      "html": "<a class=\"ds-btn-contorno\" href=\"#\">Ver todos os 244 votos</a>",
+      "css": ".ds-btn-contorno { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0.5rem 1.1rem; border: 1px solid var(--ambar, #ffb36b); border-radius: 6px; color: var(--ambar, #ffb36b); font-family: var(--fonte-ui), 'Atkinson Hyperlegible', system-ui, sans-serif; font-weight: 700; text-decoration: none; transition: background-color 160ms ease-out; } .ds-btn-contorno:hover { background: color-mix(in srgb, #ffb36b 12%, transparent); } .ds-btn-contorno:focus-visible { outline: 2px solid #ffb36b; outline-offset: 3px; }"
+    },
+    {
+      "name": "Campo de busca",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo índigo com rótulo névoa acima; foco em âmbar com halo.",
+      "html": "<label class=\"ds-campo\"><span>Buscar pelo nome</span><input placeholder=\"Ex.: Tabata\"></label>",
+      "css": ".ds-campo { display: grid; gap: 0.35rem; max-width: 24rem; font-family: var(--fonte-ui), 'Atkinson Hyperlegible', system-ui, sans-serif; } .ds-campo span { font-size: 0.875rem; color: var(--nevoa, #9aa6bd); } .ds-campo input { min-height: 2.75rem; padding: 0.55rem 0.8rem; border: 1px solid var(--linha-forte, #34496a); border-radius: 6px; background: var(--indigo, #16233d); color: var(--poeira, #f2f2e9); font: inherit; font-size: 1rem; transition: border-color 160ms ease-out; } .ds-campo input::placeholder { color: var(--nevoa-2, #8a96ad); } .ds-campo input:hover { border-color: var(--nevoa-2, #8a96ad); } .ds-campo input:focus-visible { outline: none; border-color: var(--ambar, #ffb36b); box-shadow: 0 0 0 3px color-mix(in srgb, #ffb36b 28%, transparent); }"
+    },
+    {
+      "name": "Abas das casas",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Abas padrão com título e contagem tabular; aberta com sublinhado âmbar.",
+      "html": "<div class=\"ds-abas\" role=\"tablist\"><button class=\"ds-aba\" role=\"tab\" aria-selected=\"false\"><b>Vereadores</b><small>Em construção</small></button><button class=\"ds-aba\" role=\"tab\" aria-selected=\"true\"><b>Deputados</b><small>513 cadeiras</small></button><button class=\"ds-aba\" role=\"tab\" aria-selected=\"false\"><b>Senadores</b><small>81 cadeiras</small></button></div>",
+      "css": ".ds-abas { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--linha, #24374f); font-family: var(--fonte-ui), 'Atkinson Hyperlegible', system-ui, sans-serif; } .ds-aba { display: grid; gap: 0.1rem; flex: 1 1 0; min-width: 7.5rem; text-align: left; padding: 0.75rem 0.9rem 0.85rem; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--nevoa, #9aa6bd); font: inherit; cursor: pointer; transition: color 160ms ease-out, border-color 160ms ease-out, background-color 160ms ease-out; } .ds-aba b { font-size: 1.0625rem; } .ds-aba small { font-size: 0.8125rem; color: var(--nevoa-2, #8a96ad); font-variant-numeric: tabular-nums; } .ds-aba:hover { color: var(--poeira, #f2f2e9); background: color-mix(in srgb, #16233d 55%, transparent); } .ds-aba[aria-selected=\"true\"] { color: var(--poeira, #f2f2e9); border-bottom-color: var(--ambar, #ffb36b); } .ds-aba:focus-visible { outline: 2px solid #ffb36b; outline-offset: 3px; }"
+    },
+    {
+      "name": "Chip de resultado",
+      "kind": "chip",
+      "refersTo": "chip-encontrado",
+      "description": "Resultado da busca: pílula índigo com amostra do partido; pressionado com borda lanterna.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"true\"><i style=\"background:#e20e28\"></i>Maria do Rosário <span>PT, RS</span></button>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 2.5rem; padding: 0.35rem 0.8rem; border: 1px solid var(--linha-forte, #34496a); border-radius: 999px; background: var(--indigo, #16233d); color: var(--poeira, #f2f2e9); font-family: var(--fonte-ui), 'Atkinson Hyperlegible', system-ui, sans-serif; cursor: pointer; } .ds-chip i { width: 0.7rem; height: 0.7rem; border-radius: 50%; } .ds-chip span { color: var(--nevoa, #9aa6bd); font-size: 0.875rem; } .ds-chip:hover { border-color: var(--nevoa-2, #8a96ad); } .ds-chip[aria-pressed=\"true\"] { border-color: var(--lanterna, #ff5a3c); } .ds-chip:focus-visible { outline: 2px solid #ffb36b; outline-offset: 3px; }"
+    },
+    {
+      "name": "Cartão do selecionado",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Índigo com sombra de carta; nome em Caslon itálico e coordenadas em lista com fios.",
+      "html": "<article class=\"ds-cartao\"><h2>Maria do Rosário</h2><dl><div><dt>Partido</dt><dd>PT</dd></div><div><dt>UF</dt><dd>RS</dd></div></dl></article>",
+      "css": ".ds-cartao { display: grid; gap: 1rem; padding: 1rem; max-width: 19rem; background: var(--indigo, #16233d); border: 1px solid var(--linha-forte, #34496a); border-radius: 6px; box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.6); color: var(--poeira, #f2f2e9); font-family: var(--fonte-ui), 'Atkinson Hyperlegible', system-ui, sans-serif; } .ds-cartao h2 { margin: 0; font-family: var(--fonte-nomes), 'Libre Caslon Text', Georgia, serif; font-style: italic; font-weight: 400; font-size: 1.375rem; line-height: 1.15; } .ds-cartao dl { margin: 0; display: grid; gap: 0.3rem; font-size: 0.9375rem; } .ds-cartao dl div { display: flex; justify-content: space-between; border-bottom: 1px solid var(--linha, #24374f); padding-bottom: 0.25rem; } .ds-cartao dt { color: var(--nevoa, #9aa6bd); } .ds-cartao dd { margin: 0; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Selos de voto",
+      "kind": "custom",
+      "refersTo": "voto-sim",
+      "description": "Sim cheio, Não vazado, outros tracejados: forma, não cor de juízo; rótulo sempre presente.",
+      "html": "<div class=\"ds-votos\"><span class=\"ds-voto\" data-voto=\"Sim\">Sim</span><span class=\"ds-voto\" data-voto=\"Não\">Não</span><span class=\"ds-voto\">Artigo 17</span></div>",
+      "css": ".ds-votos { display: flex; gap: 0.75rem; } .ds-voto { padding: 0.25rem 0.7rem; border-radius: 999px; border: 1.5px dashed var(--nevoa-2, #8a96ad); color: var(--poeira, #f2f2e9); font-family: var(--fonte-ui), 'Atkinson Hyperlegible', system-ui, sans-serif; font-weight: 700; font-size: 0.9375rem; white-space: nowrap; } .ds-voto[data-voto=\"Sim\"] { border: 1.5px solid var(--poeira, #f2f2e9); background: var(--poeira, #f2f2e9); color: var(--ceu, #0a1021); } .ds-voto[data-voto=\"Não\"] { border: 1.5px solid var(--poeira, #f2f2e9); }"
+    },
+    {
+      "name": "Mira do observador",
+      "kind": "custom",
+      "refersTo": "lanterna",
+      "description": "Assinatura: círculo e cruz de marcação em lanterna sobre halo escuro, na cadeira selecionada.",
+      "html": "<svg class=\"ds-mira\" viewBox=\"-10 -10 20 20\" width=\"96\" height=\"96\"><circle r=\"2\" fill=\"#e20e28\"/><g class=\"ds-mira-g\"><circle r=\"4.6\" stroke-width=\"1.5\" class=\"ds-halo\"/><circle r=\"4.6\" stroke-width=\"0.56\"/><line x1=\"5.6\" x2=\"7.8\" stroke-width=\"1.5\" class=\"ds-halo\"/><line x1=\"5.6\" x2=\"7.8\" stroke-width=\"0.56\"/><line x1=\"-5.6\" x2=\"-7.8\" stroke-width=\"1.5\" class=\"ds-halo\"/><line x1=\"-5.6\" x2=\"-7.8\" stroke-width=\"0.56\"/><line y1=\"5.6\" y2=\"7.8\" stroke-width=\"1.5\" class=\"ds-halo\"/><line y1=\"5.6\" y2=\"7.8\" stroke-width=\"0.56\"/><line y1=\"-5.6\" y2=\"-7.8\" stroke-width=\"1.5\" class=\"ds-halo\"/><line y1=\"-5.6\" y2=\"-7.8\" stroke-width=\"0.56\"/></g></svg>",
+      "css": ".ds-mira { background: var(--ceu, #0a1021); } .ds-mira-g { fill: none; stroke: var(--lanterna, #ff5a3c); stroke-linecap: round; transform-box: fill-box; transform-origin: center; animation: ds-mirar 260ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-mira-g .ds-halo { stroke: var(--ceu, #0a1021); } @keyframes ds-mirar { from { opacity: 0; transform: scale(1.6); } }"
+    },
+    {
+      "name": "Régua de seção",
+      "kind": "custom",
+      "refersTo": "title",
+      "description": "Seção do perfil: fio de carta com trecho âmbar de 2.5rem, título Atkinson 700.",
+      "html": "<section class=\"ds-secao\"><h2>Votos em votações nominais</h2><p>Os 244 votos mais recentes.</p></section>",
+      "css": ".ds-secao { position: relative; display: grid; gap: 1rem; padding-top: 1.25rem; border-top: 1px solid var(--linha, #24374f); color: var(--poeira, #f2f2e9); font-family: var(--fonte-ui), 'Atkinson Hyperlegible', system-ui, sans-serif; } .ds-secao::before { content: ''; position: absolute; top: -1px; left: 0; width: 2.5rem; height: 1px; background: var(--ambar, #ffb36b); } .ds-secao h2 { margin: 0; font-size: 1.375rem; line-height: 1.2; } .ds-secao p { margin: 0; color: var(--nevoa, #9aa6bd); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Atlas Celeste",
+    "overview": "O plenário é uma carta do céu noturno: cada cadeira é uma estrela num céu de dados oficiais, e quem você procura recebe a mira do observador. O sistema é de tema único e escuro, plano, construído com fios finos de carta (linhas de 1px) sobre um céu azul-noite, com índigo como única superfície elevada. A cor forte vem das estrelas (as cores de identidade dos partidos) e de dois sinais raros: âmbar para estado ativo e foco, vermelho-lanterna para a mira.\n\nA densidade é de atlas de consulta: tabelas com algarismos tabulares, legendas sempre presentes, rótulos curtos. A serifa itálica nomeia as coisas (casas, parlamentares), como os nomes das constelações numa carta; todo o resto, interface e dados, fala em Atkinson Hyperlegible. A neutralidade do produto é visual: nenhuma cor de juízo (verde/vermelho) para votos, nenhum eixo esquerda/direita para partidos.\n\nO mundo recusa o infográfico branco de portal de notícias com legenda ao lado.",
+    "keyCharacteristics": [
+      "Céu escuro único (`ceu`), superfície índigo, fios de carta em `linha` / `linha-forte`.",
+      "Itálico serifado só para nomes próprios de casas e pessoas.",
+      "Âmbar = ativo, foco, ação; lanterna = mira do observador.",
+      "Retícula de arcos e raios finos atrás do hemiciclo.",
+      "Identidade nunca só pela cor: legenda em tabela e lista acompanham toda cor de partido."
+    ],
+    "rules": [
+      { "name": "The Mira Rule", "body": "O vermelho-lanterna pertence à mira do observador e ao que a acompanha (rótulo de coordenadas, resultado pressionado), mais a estrela da marca. Nunca é cor de erro, de alerta, de botão ou de voto.", "section": "colors" },
+      { "name": "The Âmbar Rule", "body": "Âmbar significa \"ativo ou acionável agora\". Não decora; se nada está ativo, focado ou clicável, não há âmbar.", "section": "colors" },
+      { "name": "The Céu Apagado Rule", "body": "Filtrar não esconde estrelas: as cadeiras fora do recorte perdem a cor do partido e viram `linha` a 70% de opacidade; as linhas de legenda fora do recorte caem a 40%.", "section": "colors" },
+      { "name": "The Constelação Rule", "body": "A serifa itálica só nomeia: casas legislativas e pessoas. Nunca rótulos, botões, números ou títulos de seção.", "section": "typography" },
+      { "name": "The Algarismo Tabular Rule", "body": "Todo número que se compara (cadeiras, votos, datas, legislaturas) usa algarismos tabulares.", "section": "typography" },
+      { "name": "The Uma Sombra Rule", "body": "Existe uma sombra e ela é ambiente. Não há sombras duras, deslocadas ou em camadas.", "section": "elevation" },
+      { "name": "The Régua de Seção Rule", "body": "Seções do perfil abrem com um fio `linha` de 1px e um trecho âmbar de 2.5rem à esquerda, como a escala de um atlas.", "section": "shapes" }
+    ],
+    "dos": [
+      "**Do** manter o tema único escuro: fundo `ceu`, superfícies `indigo`, fios de 1px `linha` / `linha-forte`.",
+      "**Do** usar âmbar para todo estado ativo, foco (`outline 2px`, offset 3px) e ação principal.",
+      "**Do** reservar o vermelho-lanterna para a mira e seus ecos (coordenadas, resultado pressionado) e para a estrela da marca.",
+      "**Do** acompanhar toda cor de partido com sigla em texto (legenda em tabela, lista, cartão).",
+      "**Do** distinguir valores de voto por forma (cheio / vazado / tracejado) com rótulo de texto.",
+      "**Do** usar algarismos tabulares em todo número comparável.",
+      "**Do** apagar (não esconder) o que fica fora do filtro.",
+      "**Do** desenhar setas e ícones como SVG ou bordas, e respeitar `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "**Don't** usar verde/vermelho ou qualquer cor de juízo para Sim/Não.",
+      "**Don't** usar o vermelho-lanterna para erro, alerta, botões ou destaque genérico.",
+      "**Don't** usar a serifa itálica fora de nomes de casas e pessoas.",
+      "**Don't** criar um tema claro nem fundos brancos de infográfico de portal.",
+      "**Don't** ordenar partidos em eixo esquerda/direita; a ordem é por número de cadeiras.",
+      "**Don't** adicionar sombras duras, deslocadas ou em camadas além da sombra de carta."
+    ]
+  }
+}
