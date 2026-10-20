@@ -262,13 +262,10 @@ function Casa({
                     <circle r={raioPonto * 2.3} strokeWidth={raioPonto * 0.75} className={styles.miraHalo} />
                     <circle r={raioPonto * 2.3} strokeWidth={raioPonto * 0.28} />
                     {[0, 90, 180, 270].map((a) => (
-                      <line
-                        key={a}
-                        x1={raioPonto * 2.8}
-                        x2={raioPonto * 3.9}
-                        strokeWidth={raioPonto * 0.28}
-                        transform={`rotate(${a})`}
-                      />
+                      <g key={a} transform={`rotate(${a})`}>
+                        <line x1={raioPonto * 2.8} x2={raioPonto * 3.9} strokeWidth={raioPonto * 0.75} className={styles.miraHalo} />
+                        <line x1={raioPonto * 2.8} x2={raioPonto * 3.9} strokeWidth={raioPonto * 0.28} />
+                      </g>
                     ))}
                   </g>
                 </g>

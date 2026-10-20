@@ -109,6 +109,27 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
   };
 }
 
+// A carga histórica das votações da Câmara cobre todos os meses desde fev/2023?
+// Janeiro é recesso e não entra na conta. Enquanto houver mês sem votação carregada, o texto avisa.
+export async function getCoberturaVotosCompleta(): Promise<boolean> {
+  "use cache";
+  cacheLife("hours");
+  const [{ faltando }] = await sql<{ faltando: string }[]>`
+    select count(*) as faltando
+    from generate_series(date '2023-02-01', date_trunc('month', current_date) - interval '1 month', interval '1 month') m
+    where extract(month from m) <> 1
+      and not exists (select 1 from votacao v where v.casa_id = 'camara'
+                        and v.data >= m and v.data < m + interval '1 month')
+  `;
+  return Number(faltando) === 0;
+}
+
+export function textoCobertura(completa: boolean): string {
+  return completa
+    ? "desde fevereiro de 2023"
+    : "até agora (o histórico desde fevereiro de 2023 ainda está sendo carregado)";
+}
+
 // Todos os votos nominais do parlamentar, do mais recente ao mais antigo.
 export async function getTodosVotos(id: number): Promise<VotoRegistrado[]> {
   "use cache";

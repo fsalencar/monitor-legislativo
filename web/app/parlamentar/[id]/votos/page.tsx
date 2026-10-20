@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getIdsEmExercicio, getPerfil, getTodosVotos } from "@/lib/perfil";
+import { getCoberturaVotosCompleta, getIdsEmExercicio, getPerfil, getTodosVotos, textoCobertura } from "@/lib/perfil";
 import { ListaVotos } from "../componentes";
 import styles from "../perfil.module.css";
 
@@ -27,7 +27,7 @@ export default function Page(props: PageProps<"/parlamentar/[id]/votos">) {
 async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]/votos">["params"] }) {
   const id = Number((await params).id);
   if (!Number.isInteger(id)) notFound();
-  const [p, votos] = await Promise.all([getPerfil(id), getTodosVotos(id)]);
+  const [p, votos, completa] = await Promise.all([getPerfil(id), getTodosVotos(id), getCoberturaVotosCompleta()]);
   if (!p) notFound();
 
   return (
@@ -38,8 +38,8 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]/votos
       <section className={styles.secao}>
         <h1 className={styles.tituloVotos}>Votos de {p.nome}</h1>
         <p className={styles.nota}>
-          {votos.length} votos em votações nominais desde fevereiro de 2023, do mais recente ao mais antigo. Votações
-          simbólicas não registram voto individual e não aparecem aqui.
+          {votos.length} votos em votações nominais {textoCobertura(completa)}, do mais recente ao mais antigo.
+          Votações simbólicas não registram voto individual e não aparecem aqui.
         </p>
         {votos.length > 0 && <ListaVotos votos={votos} partidoAtual={p.partido} />}
       </section>

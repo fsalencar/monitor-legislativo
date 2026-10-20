@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getIdsEmExercicio, getPerfil, type Perfil } from "@/lib/perfil";
+import { getCoberturaVotosCompleta, getIdsEmExercicio, getPerfil, textoCobertura, type Perfil } from "@/lib/perfil";
 import { cargo, ListaVotos, Localizador } from "./componentes";
 import styles from "./perfil.module.css";
 
+// Só um perfil no build (exigência do cache components). Os demais são gerados na primeira
+// visita, pela função em São Paulo ao lado do banco, e ficam em cache. Pré-gerar os ~600 no
+// build da Vercel (fora do Brasil) estoura o tempo limite dos dados em cache.
 export async function generateStaticParams() {
-  const ids = await getIdsEmExercicio();
-  return ids.map((id) => ({ id: String(id) }));
+  const [primeiro] = await getIdsEmExercicio();
+  return [{ id: String(primeiro) }];
 }
 
 export async function generateMetadata({ params }: PageProps<"/parlamentar/[id]">) {
@@ -28,7 +31,7 @@ export default function Page(props: PageProps<"/parlamentar/[id]">) {
 async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["params"] }) {
   const id = Number((await params).id);
   if (!Number.isInteger(id)) notFound();
-  const p = await getPerfil(id);
+  const [p, completa] = await Promise.all([getPerfil(id), getCoberturaVotosCompleta()]);
   if (!p) notFound();
 
   return (
@@ -40,7 +43,7 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
       <div className={styles.colunas}>
         <div className={styles.principal}>
           <Cabecalho p={p} />
-          <Votos p={p} />
+          <Votos p={p} cobertura={textoCobertura(completa)} />
           <Mandatos p={p} />
           <section className={styles.secao}>
             <h2>Projetos de autoria</h2>
@@ -89,7 +92,7 @@ function Cabecalho({ p }: { p: Perfil }) {
   );
 }
 
-function Votos({ p }: { p: Perfil }) {
+function Votos({ p, cobertura }: { p: Perfil; cobertura: string }) {
   if (p.casa === "senado") {
     return (
       <section className={styles.secao}>
@@ -104,8 +107,8 @@ function Votos({ p }: { p: Perfil }) {
       <h2>Votos em votações nominais</h2>
       <p className={styles.nota}>
         {p.totalVotos === 0
-          ? "Nenhum voto nominal registrado desde fevereiro de 2023."
-          : `${truncado ? `Os ${p.votos.length} mais recentes de ` : ""}${p.totalVotos} votos registrados desde fevereiro de 2023. Votações simbólicas não registram voto individual e não aparecem aqui.`}
+          ? `Nenhum voto nominal registrado ${cobertura}.`
+          : `${truncado ? `Os ${p.votos.length} mais recentes de ` : ""}${p.totalVotos} votos registrados ${cobertura}. Votações simbólicas não registram voto individual e não aparecem aqui.`}
       </p>
       {p.votos.length > 0 && <ListaVotos votos={p.votos} partidoAtual={p.partido} />}
       {truncado && (

@@ -80,20 +80,16 @@ export async function Localizador({ id, casa, partido }: { id: number; casa: Cas
     <Link href={`/?casa=${casa}&sel=${id}`} className={styles.localizador}>
       <svg viewBox={`${-1 - m} ${-1 - m} ${2 + 2 * m} ${1 + 2 * m}`} aria-hidden>
         {cadeiras.map((s, i) => (
-          <circle key={i} cx={s.x} cy={-s.y} r={raioPonto} fill={i === idx ? corDoPartido(partido ?? "") : "var(--linha)"} />
+          <circle key={i} cx={s.x} cy={-s.y} r={raioPonto} fill={i === idx ? corDoPartido(partido ?? "") : "var(--nevoa-2)"} opacity={i === idx ? 1 : 0.35} />
         ))}
         <g transform={`translate(${c.x} ${-c.y})`} fill="none" strokeLinecap="round">
-          <circle r={raioPonto * 2.3} strokeWidth={raioPonto * 0.75} stroke="var(--ceu)" />
+          <circle r={raioPonto * 2.3} strokeWidth={raioPonto * 0.75} stroke="var(--indigo)" />
           <circle r={raioPonto * 2.3} strokeWidth={raioPonto * 0.3} stroke="var(--lanterna)" />
           {[0, 90, 180, 270].map((a) => (
-            <line
-              key={a}
-              x1={raioPonto * 2.8}
-              x2={raioPonto * 3.9}
-              strokeWidth={raioPonto * 0.3}
-              stroke="var(--lanterna)"
-              transform={`rotate(${a})`}
-            />
+            <g key={a} transform={`rotate(${a})`}>
+              <line x1={raioPonto * 2.8} x2={raioPonto * 3.9} strokeWidth={raioPonto * 0.75} stroke="var(--indigo)" />
+              <line x1={raioPonto * 2.8} x2={raioPonto * 3.9} strokeWidth={raioPonto * 0.3} stroke="var(--lanterna)" />
+            </g>
           ))}
         </g>
       </svg>
