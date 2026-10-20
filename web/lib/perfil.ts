@@ -134,7 +134,8 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
       numero: l.numero,
       inicio: iso(l.data_inicio)!,
       fim: iso(l.data_fim),
-      partido: l.sigla_partido ?? SEM_PARTIDO,
+      // Mandatos antigos do Senado vêm sem partido na fonte: mostra "—", não "Sem partido".
+      partido: l.sigla_partido ?? (p.casa_id === "senado" ? "—" : SEM_PARTIDO),
       uf: l.uf ?? "",
       emExercicio: l.em_exercicio,
       situacao: l.situacao,
@@ -144,11 +145,18 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
   };
 }
 
-// A carga histórica das votações da Câmara cobre todos os meses desde fev/2023?
-// Janeiro é recesso e não entra na conta. Enquanto houver mês sem votação carregada, o texto avisa.
-export async function getCoberturaVotosCompleta(): Promise<boolean> {
+// A carga histórica das votações cobre tudo desde fev/2023?
+// Senado: sim quando a carga histórica (job senado-votacoes-historico) terminou com sucesso.
+// Câmara: todo mês (exceto janeiro, recesso) precisa ter votação carregada.
+export async function getCoberturaVotosCompleta(casa: CasaId): Promise<boolean> {
   "use cache";
   cacheLife("hours");
+  if (casa === "senado") {
+    const [r] = await sql<{ ok: boolean }[]>`
+      select exists (select 1 from ingestao_execucao where job = 'senado-votacoes-historico' and ok) as ok
+    `;
+    return r.ok;
+  }
   const [{ faltando }] = await sql<{ faltando: string }[]>`
     select count(*) as faltando
     from generate_series(date '2023-02-01', date_trunc('month', current_date) - interval '1 month', interval '1 month') m

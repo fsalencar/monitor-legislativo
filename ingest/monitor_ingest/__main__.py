@@ -6,7 +6,8 @@ from datetime import date, timedelta
 
 from . import db
 from .camara import CamaraClient
-from .jobs import camara_atividade, camara_deputados, camara_votacoes, resumos, senado_senadores
+from .jobs import (camara_atividade, camara_deputados, camara_votacoes, resumos, senado_atividade,
+                   senado_senadores)
 
 
 def main() -> None:
@@ -28,6 +29,12 @@ def main() -> None:
     pres = sub.add_parser("camara-presencas", help="presença em sessões deliberativas do plenário")
     pres.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=30))
     pres.add_argument("--ate", type=date.fromisoformat, default=date.today())
+    sub.add_parser("senado-mandatos", help="histórico de mandatos dos senadores em exercício")
+    sub.add_parser("senado-licencas", help="licenças e afastamentos dos senadores")
+    sub.add_parser("senado-autorias", help="projetos de autoria dos senadores")
+    sv = sub.add_parser("senado-votacoes", help="votações nominais do Senado com os votos")
+    sv.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=30))
+    sv.add_argument("--ate", type=date.fromisoformat, default=date.today())
     res = sub.add_parser("resumos", help="resumo em linguagem simples (IA) das proposições principais")
     res.add_argument("--limite", type=int, default=200, help="máximo de proposições nesta execução")
     res.add_argument("--dry-run", action="store_true", help="só mostra os resumos, não grava")
@@ -44,6 +51,20 @@ def main() -> None:
             else:
                 stats["registros"] = camara_atividade.presencas(conn, args.desde, args.ate)
         print(f"{args.cmd}: {stats['registros']} registros ({time.monotonic() - t0:.0f}s)")
+        return
+
+    if args.cmd.startswith("senado-") and args.cmd != "senado-senadores":
+        t0 = time.monotonic()
+        # Carga desde o início da legislatura atual é registrada à parte: marca a cobertura completa.
+        job = args.cmd + ("-historico" if args.cmd == "senado-votacoes" and args.desde <= date(2023, 2, 1) else "")
+        with db.connect() as conn, db.execucao(conn, job) as stats:
+            if args.cmd == "senado-votacoes":
+                stats["registros"] = senado_atividade.votacoes(conn, args.desde, args.ate)
+            else:
+                stats["registros"] = {"senado-mandatos": senado_atividade.mandatos,
+                                      "senado-licencas": senado_atividade.licencas,
+                                      "senado-autorias": senado_atividade.autorias}[args.cmd](conn)
+        print(f"{job}: {stats['registros']} registros ({time.monotonic() - t0:.0f}s)")
         return
 
     if args.cmd == "resumos":

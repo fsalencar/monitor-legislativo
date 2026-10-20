@@ -40,14 +40,14 @@ export default function Page(props: PageProps<"/parlamentar/[id]">) {
 async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["params"] }) {
   const id = idDoParametro((await params).id);
   if (!id) notFound();
-  const [p, completa, autoria, presenca, afastamentos] = await Promise.all([
+  const [p, autoria, presenca, afastamentos] = await Promise.all([
     getPerfil(id),
-    getCoberturaVotosCompleta(),
     getAutorias(id),
     getPresenca(id),
     getAfastamentos(id),
   ]);
   if (!p) notFound();
+  const completa = await getCoberturaVotosCompleta(p.casa);
 
   return (
     <main className={`moldura ${styles.pagina}`}>
@@ -103,14 +103,6 @@ function Cabecalho({ p }: { p: Perfil }) {
 }
 
 function Votos({ p, cobertura }: { p: Perfil; cobertura: string }) {
-  if (p.casa === "senado") {
-    return (
-      <section className={styles.secao}>
-        <h2>Votos em votações nominais</h2>
-        <p className={styles.nota}>As votações do Senado ainda não foram carregadas.</p>
-      </section>
-    );
-  }
   const truncado = p.votos.length < p.totalVotos;
   return (
     <section className={styles.secao}>
@@ -136,16 +128,26 @@ const INICIO: Record<Legislatura["situacao"], string> = {
   futura: "começa em",
 };
 
+// Mandato atual de senador: a legislatura em curso e a outra do mesmo mandato de 8 anos. Se a
+// legislatura seguinte já está registrada, o mandato é (atual, seguinte); senão, (anterior, atual).
+function mandatoAtualSenado(legs: Legislatura[]): Legislatura[] {
+  const atual = legs.find((l) => l.situacao === "em curso");
+  if (!atual) return [];
+  const seguinte = legs.find((l) => l.numero === atual.numero + 1);
+  const anterior = legs.find((l) => l.numero === atual.numero - 1);
+  const par = seguinte ? [atual, seguinte] : anterior ? [anterior, atual] : [atual];
+  return par.sort((a, b) => a.numero - b.numero);
+}
+
 function Mandatos({ p }: { p: Perfil }) {
   const senado = p.casa === "senado";
-  // Mandato de senador: 8 anos, duas legislaturas seguidas.
-  const doMandato = senado ? [...p.legislaturas].sort((a, b) => a.numero - b.numero) : [];
+  const doMandato = senado ? mandatoAtualSenado(p.legislaturas) : [];
   return (
     <section className={styles.secao}>
-      <h2>{senado ? "Mandato atual" : "Legislaturas com mandato na Câmara"}</h2>
-      {senado && doMandato.length > 0 && (
+      <h2>{senado ? "Mandatos no Senado" : "Legislaturas com mandato na Câmara"}</h2>
+      {doMandato.length > 0 && (
         <p className={styles.mandatoSenado}>
-          {ano(doMandato[0].inicio)} a {ano(doMandato[doMandato.length - 1].fim ?? doMandato[0].inicio)}
+          Mandato atual: {ano(doMandato[0].inicio)} a {ano(doMandato[doMandato.length - 1].fim ?? doMandato[0].inicio)}
           <span>
             {" "}
             (8 anos, {doMandato.map((l) => `${l.numero}ª`).join(" e ")} legislaturas)
@@ -155,7 +157,7 @@ function Mandatos({ p }: { p: Perfil }) {
       <p className={styles.nota}>
         Legislatura é o período de 4 anos de trabalho do Congresso, numerado desde 1826.{" "}
         {senado
-          ? "O mandato de senador dura 8 anos e cobre duas legislaturas. O histórico de mandatos anteriores no Senado ainda não foi carregado."
+          ? "O mandato de senador dura 8 anos e cobre duas legislaturas. A fonte não informa o partido de mandatos anteriores."
           : "Cada legislatura corresponde a um mandato de deputado."}
       </p>
       <div className={styles.tabelaRolagem}>

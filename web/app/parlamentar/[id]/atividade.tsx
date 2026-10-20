@@ -7,18 +7,19 @@ const dataCurta = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
   timeZone: "America/Sao_Paulo",
 });
-const mesAno = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric", timeZone: "UTC" });
+const dia = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
 
-const SO_CAMARA = "Ainda não carregado para o Senado.";
+const PRESENCA_SENADO =
+  "A frequência por sessão do Senado ainda não foi carregada. Nas votações nominais acima, o registro de cada senador já indica presença, licença, missão ou ausência (veja o glossário dos votos).";
 
 export function Autoria({ casa, total, projetos }: { casa: string; total: number; projetos: ProjetoAutoria[] }) {
   return (
     <section className={styles.secao}>
       <h2>Projetos de autoria</h2>
-      {casa === "senado" ? (
-        <p className={styles.nota}>{SO_CAMARA}</p>
-      ) : total === 0 ? (
-        <p className={styles.nota}>Nenhum projeto de autoria registrado na Câmara.</p>
+      {total === 0 ? (
+        <p className={styles.nota}>
+          Nenhum projeto de autoria registrado {casa === "senado" ? "no Senado" : "na Câmara"}.
+        </p>
       ) : (
         <>
           <p className={styles.nota}>
@@ -55,7 +56,7 @@ export function PresencaSessoes({ casa, presenca }: { casa: string; presenca: Pr
     <section className={styles.secao}>
       <h2>Presença em sessões deliberativas</h2>
       {casa === "senado" ? (
-        <p className={styles.nota}>{SO_CAMARA}</p>
+        <p className={styles.nota}>{PRESENCA_SENADO}</p>
       ) : sessoes === 0 ? (
         <p className={styles.nota}>Nenhuma sessão deliberativa do plenário registrada para este deputado.</p>
       ) : (
@@ -105,20 +106,26 @@ export function Afastamentos({ casa, afastamentos }: { casa: string; afastamento
   return (
     <section className={styles.secao}>
       <h2>Afastamentos e licenças</h2>
-      {casa === "senado" ? (
-        <p className={styles.nota}>{SO_CAMARA}</p>
-      ) : afastamentos.length === 0 ? (
-        <p className={styles.nota}>Nenhum afastamento ou licença registrado no histórico da Câmara.</p>
+      {afastamentos.length === 0 ? (
+        <p className={styles.nota}>
+          Nenhum afastamento ou licença registrado {casa === "senado" ? "pelo Senado" : "no histórico da Câmara"}.
+        </p>
       ) : (
         <>
           <p className={styles.nota}>
-            Períodos em que deixou o exercício do mandato, com o motivo registrado pela Câmara.
+            {casa === "senado"
+              ? "Licenças e afastamentos registrados pelo Senado, com o tipo informado pela fonte (inclui missões oficiais de um dia)."
+              : "Períodos em que deixou o exercício do mandato, com o motivo registrado pela Câmara."}
           </p>
           <ul className={styles.afastamentos}>
             {afastamentos.map((a) => (
               <li key={`${a.inicio}-${a.motivo}`}>
                 <span className={styles.periodo}>
-                  {mesAno.format(new Date(a.inicio))} a {a.fim ? mesAno.format(new Date(a.fim)) : "hoje"}
+                  {!a.fim
+                    ? `desde ${dia.format(new Date(a.inicio))}`
+                    : a.fim === a.inicio
+                      ? dia.format(new Date(a.inicio))
+                      : `${dia.format(new Date(a.inicio))} a ${dia.format(new Date(a.fim))}`}
                 </span>
                 <span>{(a.motivo ?? "").replace(/^Saída - /, "")}</span>
               </li>

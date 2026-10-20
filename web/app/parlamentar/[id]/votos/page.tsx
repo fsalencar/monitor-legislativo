@@ -26,8 +26,9 @@ export default function Page(props: PageProps<"/parlamentar/[id]/votos">) {
 async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]/votos">["params"] }) {
   const id = idDoParametro((await params).id);
   if (!id) notFound();
-  const [p, votos, completa] = await Promise.all([getPerfil(id), getTodosVotos(id), getCoberturaVotosCompleta()]);
+  const [p, votos] = await Promise.all([getPerfil(id), getTodosVotos(id)]);
   if (!p) notFound();
+  const completa = await getCoberturaVotosCompleta(p.casa);
 
   return (
     <main className={`moldura ${styles.pagina}`}>
