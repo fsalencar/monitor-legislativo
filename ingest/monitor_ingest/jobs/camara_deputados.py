@@ -36,8 +36,11 @@ def coletar(api: CamaraClient, historico: bool) -> Coleta:
 
     c.em_exercicio = {d["id"] for d in api.paginate("/deputados")}
 
-    ids_atuais = sorted({dep for dep, leg in c.mandatos if leg == atual} | c.em_exercicio)
-    for d in api.get_many([f"/deputados/{i}" for i in ids_atuais]):
+    # Detalhe: deputados da legislatura atual + quem não tem nome em nenhuma listagem.
+    com_nome = {dep for (dep, _), item in c.mandatos.items() if item.get("nome")}
+    sem_nome = {dep for dep, _ in c.mandatos} - com_nome
+    ids_detalhe = sorted({dep for dep, leg in c.mandatos if leg == atual} | c.em_exercicio | sem_nome)
+    for d in api.get_many([f"/deputados/{i}" for i in ids_detalhe]):
         d.pop("cpf", None)  # não armazenamos CPF
         c.detalhes[d["id"]] = d
     return c
@@ -55,14 +58,21 @@ def gravar(conn: psycopg.Connection, c: Coleta) -> int:
         )
 
         # Parlamentar: dados da listagem mais recente em que aparece + detalhe, se houver.
+        # Algumas listagens antigas vêm sem nome; usa o mais recente não nulo, depois o detalhe.
         ultimo: dict[int, dict] = {}
+        nome: dict[int, str] = {}
         for (dep, leg), item in sorted(c.mandatos.items(), key=lambda kv: kv[0][1]):
             ultimo[dep] = item
+            if item.get("nome"):
+                nome[dep] = item["nome"]
         rows = []
         for dep, item in ultimo.items():
             det = c.detalhes.get(dep, {})
+            status = det.get("ultimoStatus") or {}
             rows.append((
-                CASA, str(dep), item["nome"], det.get("nomeCivil"), det.get("sexo"),
+                CASA, str(dep),
+                nome.get(dep) or status.get("nome") or status.get("nomeEleitoral") or det.get("nomeCivil"),
+                det.get("nomeCivil"), det.get("sexo"),
                 det.get("dataNascimento"), det.get("ufNascimento"), det.get("municipioNascimento"),
                 item.get("urlFoto"), URL_DEPUTADO.format(dep),
             ))
