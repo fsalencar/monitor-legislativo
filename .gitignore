@@ -5,3 +5,8 @@ __pycache__/
 node_modules/
 .next/
 .vercel/
+
+# artefatos locais do impeccable (capturas, referências, rascunhos)
+.impeccable/review/
+.impeccable/ref/
+.impeccable/mocks/

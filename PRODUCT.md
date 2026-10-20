@@ -26,7 +26,7 @@ Site apartidário de transparência legislativa: mostra as cadeiras ocupadas na 
 
 ## Capabilities and Constraints
 - Next.js na Vercel (região gru1), Postgres no Supabase (sa-east-1); páginas pré-renderizadas e revalidadas por hora.
-- Cores de partido não usam as cores "tradicionais" dos partidos, para não sugerir alinhamento ideológico; partidos ordenados por número de cadeiras, nunca em eixo esquerda/direita.
+- Cores de partido: cada partido usa a cor mais próxima da sua identidade visual (decisão do usuário, 20/10/2026), ajustada só para não repetir cor entre partidos e para ler sobre o fundo. Partidos ordenados por número de cadeiras, nunca em eixo esquerda/direita. Identidade nunca só pela cor: legenda e lista sempre presentes.
 - Fotos vêm direto dos sites oficiais.
 - Monetização futura: no máximo um bloco discreto de anúncio, nunca sobre os dados; nada de patrocínio partidário.
 

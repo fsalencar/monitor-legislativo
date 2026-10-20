@@ -198,8 +198,10 @@
   transition: opacity 200ms ease-out;
 }
 
+/* Fora do recorte, a cadeira perde a cor do partido: o céu se apaga e só o recorte fica aceso. */
 .cadeira[data-apagada] {
-  opacity: 0.16;
+  fill: var(--linha);
+  opacity: 0.7;
 }
 
 /* A mira do observador: única aparição do vermelho-lanterna. */
@@ -211,6 +213,10 @@
   pointer-events: none;
   transform-box: fill-box;
   transform-origin: center;
+}
+
+.miraHalo {
+  stroke: var(--ceu);
 }
 
 @keyframes mirar {
@@ -345,12 +351,22 @@
   gap: 0.9rem;
 }
 
-.cartao img {
+.cartao img,
+.semFoto {
   width: 72px;
   height: 96px;
   object-fit: cover;
   border-radius: 4px;
   background: var(--linha);
+}
+
+.semFoto {
+  display: grid;
+  place-items: center;
+  font-family: var(--fonte-nomes), Georgia, serif;
+  font-style: italic;
+  font-size: 1.75rem;
+  color: var(--nevoa);
 }
 
 .cartao h2 {
@@ -499,6 +515,24 @@
 .legendaItem[aria-pressed="true"] {
   color: var(--ambar);
   font-weight: 700;
+}
+
+.expandir {
+  justify-self: start;
+  min-height: 2.5rem;
+  padding: 0.4rem 0;
+  border: 0;
+  background: none;
+  color: var(--ambar);
+  font-size: 0.9375rem;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--ambar) 45%, transparent);
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.lateral .legenda + .expandir {
+  margin-top: -1rem;
 }
 
 .amostra {

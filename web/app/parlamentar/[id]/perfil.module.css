@@ -38,8 +38,6 @@
   grid-template-columns: auto 1fr;
   gap: 1.5rem;
   align-items: end;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--linha);
 }
 
 .cabecalho img {
@@ -52,7 +50,7 @@
 }
 
 .cabecalho h1 {
-  margin: 0.15rem 0 0.35rem;
+  margin: 0 0 0.4rem;
   font-family: var(--fonte-nomes), Georgia, serif;
   font-style: italic;
   font-weight: 400;
@@ -61,15 +59,109 @@
   letter-spacing: -0.015em;
 }
 
-.cargo {
-  margin: 0;
+.colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 17rem;
+  gap: 3rem;
+  align-items: start;
+}
+
+.principal {
+  display: grid;
+  gap: 2.75rem;
+  min-width: 0;
+}
+
+.lateral {
+  position: sticky;
+  top: 1.5rem;
+}
+
+/* No celular, o mini plenário entra logo depois do cabeçalho, antes dos votos. */
+@media (max-width: 56rem) {
+  .colunas {
+    grid-template-columns: 1fr;
+    gap: 2.75rem;
+  }
+  .principal {
+    display: contents;
+  }
+  .lateral {
+    position: static;
+    order: 1;
+  }
+  .principal > :not(header) {
+    order: 2;
+  }
+}
+
+/* Mini plenário: a cadeira desta pessoa acesa, sob a mira. */
+.localizador {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  background: var(--indigo);
+  text-decoration: none;
   color: var(--nevoa);
+  font-size: 0.9375rem;
+  transition: border-color 160ms ease-out;
+}
+
+.localizador svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.localizador:hover {
+  border-color: var(--linha-forte);
+  color: var(--ambar);
+}
+
+@media (max-width: 56rem) {
+  .localizador {
+    grid-template-columns: 9rem 1fr;
+    align-items: center;
+  }
+}
+
+.todos {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--ambar);
+  border-radius: var(--raio);
+  color: var(--ambar);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.todos:hover {
+  background: color-mix(in srgb, var(--ambar) 12%, transparent);
+}
+
+.tituloVotos {
+  margin: 0;
+  font-family: var(--fonte-nomes), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.9rem, 1.4rem + 2vw, 2.75rem);
+  line-height: 1.08;
 }
 
 .partidoUf {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 700;
+}
+
+.partidoUf span {
+  font-weight: 400;
+  color: var(--nevoa);
 }
 
 .nomeCivil {
@@ -101,6 +193,14 @@
   display: grid;
   gap: 1rem;
   max-width: 52rem;
+}
+
+/* Régua de seção: fio da carta com um trecho mais marcado, como a escala de um atlas. */
+.principal > .secao {
+  padding-top: 1.25rem;
+  background: linear-gradient(var(--ambar), var(--ambar)) top left / 2.5rem 1px no-repeat;
+  background-origin: border-box;
+  border-top: 1px solid var(--linha);
 }
 
 .secao h2 {

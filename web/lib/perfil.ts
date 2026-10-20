@@ -28,6 +28,7 @@ export type Perfil = {
   casa: CasaId;
   nome: string;
   nomeCivil: string | null;
+  sexo: string | null;
   foto: string | null;
   urlFonte: string;
   partido: string | null;
@@ -54,8 +55,16 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
   cacheLife("hours");
 
   const [p] = await sql<
-    { id: string; casa_id: CasaId; nome: string; nome_civil: string | null; url_foto: string | null; url_fonte: string }[]
-  >`select id, casa_id, nome, nome_civil, url_foto, url_fonte from parlamentar where id = ${id}`;
+    {
+      id: string;
+      casa_id: CasaId;
+      nome: string;
+      nome_civil: string | null;
+      sexo: string | null;
+      url_foto: string | null;
+      url_fonte: string;
+    }[]
+  >`select id, casa_id, nome, nome_civil, sexo, url_foto, url_fonte from parlamentar where id = ${id}`;
   if (!p) return null;
 
   const legs = await sql<
@@ -67,7 +76,48 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
     order by m.legislatura desc
   `;
 
-  const votos = await sql<
+  const votos = await consultarVotos(id, LIMITE_VOTOS);
+
+  const [{ total }] = await sql<{ total: string }[]>`
+    select count(*) as total from voto where parlamentar_id = ${id}
+  `;
+
+  const atual = legs.find((l) => l.em_exercicio) ?? legs[0];
+  const iso = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
+
+  return {
+    id: Number(p.id),
+    casa: p.casa_id,
+    nome: p.nome,
+    nomeCivil: p.nome_civil,
+    sexo: p.sexo,
+    foto: p.url_foto,
+    urlFonte: p.url_fonte,
+    partido: atual ? (atual.sigla_partido ?? SEM_PARTIDO) : null,
+    uf: atual?.uf ?? null,
+    emExercicio: legs.some((l) => l.em_exercicio),
+    legislaturas: legs.map((l) => ({
+      numero: l.numero,
+      inicio: iso(l.data_inicio)!,
+      fim: iso(l.data_fim),
+      partido: l.sigla_partido ?? SEM_PARTIDO,
+      uf: l.uf ?? "",
+      emExercicio: l.em_exercicio,
+    })),
+    votos,
+    totalVotos: Number(total),
+  };
+}
+
+// Todos os votos nominais do parlamentar, do mais recente ao mais antigo.
+export async function getTodosVotos(id: number): Promise<VotoRegistrado[]> {
+  "use cache";
+  cacheLife("hours");
+  return consultarVotos(id, null);
+}
+
+async function consultarVotos(id: number, limite: number | null): Promise<VotoRegistrado[]> {
+  const rows = await sql<
     {
       votacao_id: string;
       data_hora: Date | null;
@@ -90,45 +140,17 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
     from voto vo join votacao v on v.id = vo.votacao_id
     where vo.parlamentar_id = ${id}
     order by v.data_hora desc nulls last
-    limit ${LIMITE_VOTOS}
+    ${limite === null ? sql`` : sql`limit ${limite}`}
   `;
-
-  const [{ total }] = await sql<{ total: string }[]>`
-    select count(*) as total from voto where parlamentar_id = ${id}
-  `;
-
-  const atual = legs.find((l) => l.em_exercicio) ?? legs[0];
-  const iso = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
-
-  return {
-    id: Number(p.id),
-    casa: p.casa_id,
-    nome: p.nome,
-    nomeCivil: p.nome_civil,
-    foto: p.url_foto,
-    urlFonte: p.url_fonte,
-    partido: atual ? (atual.sigla_partido ?? SEM_PARTIDO) : null,
-    uf: atual?.uf ?? null,
-    emExercicio: legs.some((l) => l.em_exercicio),
-    legislaturas: legs.map((l) => ({
-      numero: l.numero,
-      inicio: iso(l.data_inicio)!,
-      fim: iso(l.data_fim),
-      partido: l.sigla_partido ?? SEM_PARTIDO,
-      uf: l.uf ?? "",
-      emExercicio: l.em_exercicio,
-    })),
-    votos: votos.map((v) => ({
-      votacaoId: Number(v.votacao_id),
-      dataHora: v.data_hora ? v.data_hora.toISOString() : null,
-      descricao: v.descricao,
-      orgao: v.sigla_orgao,
-      aprovada: v.aprovacao,
-      voto: v.voto,
-      partidoNoVoto: v.sigla_partido,
-      urlFonte: v.url_fonte,
-      proposicoes: v.proposicoes ?? [],
-    })),
-    totalVotos: Number(total),
-  };
+  return rows.map((v) => ({
+    votacaoId: Number(v.votacao_id),
+    dataHora: v.data_hora ? v.data_hora.toISOString() : null,
+    descricao: v.descricao,
+    orgao: v.sigla_orgao,
+    aprovada: v.aprovacao,
+    voto: v.voto,
+    partidoNoVoto: v.sigla_partido,
+    urlFonte: v.url_fonte,
+    proposicoes: v.proposicoes ?? [],
+  }));
 }

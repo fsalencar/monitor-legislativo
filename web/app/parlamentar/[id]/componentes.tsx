@@ -1,0 +1,108 @@
+import Link from "next/link";
+import { corDoPartido } from "@/lib/cores";
+import { layoutHemiciclo } from "@/lib/hemiciclo";
+import { contarPartidos, ordenarCadeiras } from "@/lib/ordem";
+import type { VotoRegistrado } from "@/lib/perfil";
+import { getPlenario, type CasaId } from "@/lib/plenario";
+import styles from "./perfil.module.css";
+
+// Significado dos valores de voto que não são autoexplicativos, conforme o regimento da Câmara.
+const GLOSSARIO: Record<string, string> = {
+  "Artigo 17": "Quem preside a sessão não vota, salvo para desempatar (Regimento Interno da Câmara, art. 17).",
+  Obstrução: "O parlamentar marcou presença em obstrução, recurso regimental que não conta para o quórum da votação.",
+  Abstenção: "O parlamentar registrou presença sem votar Sim nem Não.",
+};
+
+const dataCurta = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  timeZone: "America/Sao_Paulo",
+});
+
+export function ListaVotos({ votos, partidoAtual }: { votos: VotoRegistrado[]; partidoAtual: string | null }) {
+  const usados = [...new Set(votos.map((v) => v.voto))].filter((v) => GLOSSARIO[v]);
+  return (
+    <>
+      <ol className={styles.votos}>
+        {votos.map((v) => (
+          <li key={v.votacaoId} className={styles.voto}>
+            <div className={styles.votoValor} data-voto={v.voto}>
+              {v.voto}
+            </div>
+            <div className={styles.votoCorpo}>
+              <p className={styles.votoMeta}>
+                {v.dataHora && <time dateTime={v.dataHora}>{dataCurta.format(new Date(v.dataHora))}</time>}
+                {v.orgao && v.orgao !== "PLEN" && <span>{v.orgao}</span>}
+                {v.proposicoes.map((pr) => (
+                  <a key={pr.url} href={pr.url} target="_blank" rel="noopener noreferrer" className={styles.prop}>
+                    {pr.sigla}
+                  </a>
+                ))}
+              </p>
+              {v.descricao && <p className={styles.votoDescricao}>{v.descricao}</p>}
+              {v.proposicoes[0]?.ementa && <p className={styles.ementa}>{v.proposicoes[0].ementa}</p>}
+              <p className={styles.votoRodape}>
+                {v.partidoNoVoto && v.partidoNoVoto !== partidoAtual && <span>Partido na data: {v.partidoNoVoto}. </span>}
+                <a href={v.urlFonte} target="_blank" rel="noopener noreferrer">
+                  Registro oficial da votação
+                </a>
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {usados.length > 0 && (
+        <dl className={styles.glossario}>
+          {usados.map((v) => (
+            <div key={v}>
+              <dt>{v}</dt>
+              <dd>{GLOSSARIO[v]}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </>
+  );
+}
+
+// Mini plenário com a mira na cadeira deste parlamentar; leva ao plenário com ela marcada.
+export async function Localizador({ id, casa, partido }: { id: number; casa: CasaId; partido: string | null }) {
+  const parlamentares = await getPlenario(casa);
+  const ordenados = ordenarCadeiras(parlamentares, contarPartidos(parlamentares));
+  const idx = ordenados.findIndex((p) => p.id === id);
+  if (idx < 0) return null;
+  const { cadeiras, raioPonto } = layoutHemiciclo(ordenados.length);
+  const c = cadeiras[idx];
+  const m = Math.max(raioPonto * 4.5, 0.09);
+
+  return (
+    <Link href={`/?casa=${casa}&sel=${id}`} className={styles.localizador}>
+      <svg viewBox={`${-1 - m} ${-1 - m} ${2 + 2 * m} ${1 + 2 * m}`} aria-hidden>
+        {cadeiras.map((s, i) => (
+          <circle key={i} cx={s.x} cy={-s.y} r={raioPonto} fill={i === idx ? corDoPartido(partido ?? "") : "var(--linha)"} />
+        ))}
+        <g transform={`translate(${c.x} ${-c.y})`} fill="none" strokeLinecap="round">
+          <circle r={raioPonto * 2.3} strokeWidth={raioPonto * 0.75} stroke="var(--ceu)" />
+          <circle r={raioPonto * 2.3} strokeWidth={raioPonto * 0.3} stroke="var(--lanterna)" />
+          {[0, 90, 180, 270].map((a) => (
+            <line
+              key={a}
+              x1={raioPonto * 2.8}
+              x2={raioPonto * 3.9}
+              strokeWidth={raioPonto * 0.3}
+              stroke="var(--lanterna)"
+              transform={`rotate(${a})`}
+            />
+          ))}
+        </g>
+      </svg>
+      <span>Ver a cadeira no plenário</span>
+    </Link>
+  );
+}
+
+export function cargo(casa: CasaId, sexo: string | null): string {
+  if (casa === "senado") return sexo === "F" ? "senadora" : sexo === "M" ? "senador" : "senador(a)";
+  return sexo === "F" ? "deputada federal" : sexo === "M" ? "deputado federal" : "deputado(a) federal";
+}
