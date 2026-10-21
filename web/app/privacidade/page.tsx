@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Como o Plenário Aberto trata dados de visitantes, cookies e anúncios.",
 };
 
-const REPOSITORIO = "https://github.com/fsalencar/monitor-legislativo";
+const REPOSITORIO = "https://github.com/fsalencar/plenario-aberto";
 
 export default function Privacidade() {
   return (
@@ -89,7 +89,7 @@ export default function Privacidade() {
         Dúvidas, pedidos ou correções podem ser enviados abrindo uma solicitação (issue) no repositório público
         do projeto:{" "}
         <a href={`${REPOSITORIO}/issues`} target="_blank" rel="noopener noreferrer">
-          github.com/fsalencar/monitor-legislativo
+          github.com/fsalencar/plenario-aberto
         </a>
         .
       </p>

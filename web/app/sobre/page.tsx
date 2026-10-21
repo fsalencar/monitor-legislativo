@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "O que é o Plenário Aberto, de onde vêm os dados e como o site se mantém.",
 };
 
-const REPOSITORIO = "https://github.com/fsalencar/monitor-legislativo";
+const REPOSITORIO = "https://github.com/fsalencar/plenario-aberto";
 
 export default function Sobre() {
   return (
@@ -76,7 +76,7 @@ export default function Sobre() {
       <p>
         O código do projeto é público em{" "}
         <a href={REPOSITORIO} target="_blank" rel="noopener noreferrer">
-          github.com/fsalencar/monitor-legislativo
+          github.com/fsalencar/plenario-aberto
         </a>
         . Se encontrar um dado errado ou tiver uma sugestão, abra uma solicitação (issue) no repositório. Como
         os dados vêm das fontes oficiais, um erro também pode estar na própria fonte; nesse caso, indicamos o
