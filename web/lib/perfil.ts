@@ -183,6 +183,15 @@ export type Desfecho = (typeof DESFECHOS)[number];
 
 export const DESFECHO_SQL = sql`
   case
+    -- ALESP: a situação é o texto oficial do andamento que define o desfecho (ver ingest/jobs/alesp.py).
+    when pr.casa_id = 'al-sp' then case
+      when pr.situacao ilike any (array['publicad_ a lei%', 'publicad_ a resolução%', 'publicad_ o decreto legislativo%',
+                                        'publicad_ a emenda%']) then 'lei'
+      when pr.situacao ilike any (array['%opondo veto total%', '%rejeitad_ %']) then 'rejeitado'
+      when pr.situacao ilike any (array['%retirada%', '%prejudicad%', 'arquivo%', '%arquive-se%']) then 'arquivado'
+      when pr.situacao is null then 'sem'
+      else 'tramitando'
+    end
     when pr.situacao ilike 'transformad% em norma%' then 'lei'
     when pr.situacao ilike any (array['rejeitad%', 'vetad%']) then 'rejeitado'
     when pr.situacao ilike any (array['sem efic%', 'perdeu a efic%', 'revogad%']) then 'caducou'
@@ -209,7 +218,8 @@ export type Autorias = {
 };
 
 export const PROJETOS_POR_PAGINA = 15;
-const TIPOS_PROJETO = ["PL", "PLS", "PLP", "PEC", "MPV", "PLV", "PDL", "PDC", "PDS", "PRC", "PRS", "PLN"];
+// PLC e PR: projeto de lei complementar e de resolução da ALESP.
+const TIPOS_PROJETO = ["PL", "PLS", "PLP", "PLC", "PEC", "MPV", "PLV", "PDL", "PDC", "PDS", "PRC", "PRS", "PR", "PLN"];
 
 // Projetos em que o parlamentar é autor ou coautor, dos mais recentes aos mais antigos,
 // com a contagem por desfecho sobre todos eles.

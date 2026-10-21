@@ -1,3 +1,4 @@
+import { SIGLA_CASA, type CasaId } from "@/lib/casas";
 import { PROJETOS_POR_PAGINA, type Afastamento, type Autorias, type Presenca } from "@/lib/perfil";
 import { ListaFiltrada } from "./projetos";
 import styles from "./perfil.module.css";
@@ -15,7 +16,7 @@ const PRESENCA_SENADO =
 
 const numero = new Intl.NumberFormat("pt-BR");
 
-export function Autoria({ id, casa, autorias }: { id: number; casa: string; autorias: Autorias }) {
+export function Autoria({ id, casa, autorias }: { id: number; casa: CasaId; autorias: Autorias }) {
   const { total, porDesfecho, projetos } = autorias;
   const n = (x: number) => numero.format(x);
   return (
@@ -23,14 +24,15 @@ export function Autoria({ id, casa, autorias }: { id: number; casa: string; auto
       <h2>Projetos de autoria</h2>
       {total === 0 ? (
         <p className={styles.nota}>
-          Nenhum projeto de autoria registrado {casa === "senado" ? "no Senado" : "na Câmara"}.
+          Nenhum projeto de autoria registrado {SIGLA_CASA[casa].na}.
         </p>
       ) : (
         <>
           <p className={styles.nota}>
             {n(total)} {total === 1 ? "projeto" : "projetos"} em que é autor ou coautor (projetos de lei, de lei
             complementar, propostas de emenda à Constituição e outros), do mais recente ao mais antigo. Use os
-            filtros para ver cada grupo; a classificação segue a situação oficial de cada projeto.
+            filtros para ver cada grupo; a classificação segue a situação oficial de cada projeto
+            {casa === "al-sp" && " (na ALESP, o andamento oficial que define o desfecho, como a publicação da lei)"}.
           </p>
           <p className={styles.desfechoResumo}>
             <strong>{n(porDesfecho.lei)}</strong> {porDesfecho.lei === 1 ? "virou lei" : "viraram lei"} de {n(total)}{" "}

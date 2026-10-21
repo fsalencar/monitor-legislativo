@@ -66,7 +66,19 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
       <div className={styles.colunas}>
         <div className={styles.principal}>
           <Cabecalho p={p} />
-          {assembleia ? (
+          {p.casa === "al-sp" ? (
+            <>
+              <Autoria id={p.id} casa={p.casa} autorias={autoria} />
+              <Anuncio posicao="secao" />
+              <section className={styles.secao}>
+                <h2>Votos e presença</h2>
+                <p className={styles.nota}>
+                  A ALESP não publica em dados abertos os votos nominais nem a presença dos deputados nas sessões do
+                  plenário. Afastamentos ainda não foram carregados. Consulte a página oficial do deputado.
+                </p>
+              </section>
+            </>
+          ) : assembleia ? (
             <>
               <section className={styles.secao}>
                 <h2>Atividade parlamentar</h2>
