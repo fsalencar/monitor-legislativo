@@ -54,7 +54,7 @@ CADEIRAS = {"al-sp": 94, "al-mg": 77, "al-am": 24, "al-pb": 36, "al-ro": 24, "al
 
 def _cliente() -> httpx.Client:
     return httpx.Client(timeout=90, follow_redirects=True,
-                        headers={"User-Agent": "monitor-legislativo (ingestao)", "Accept": "application/json"})
+                        headers={"User-Agent": "plenario-aberto (ingestao)", "Accept": "application/json"})
 
 
 def _json(http: httpx.Client, url: str, tentativas: int = 5) -> dict:

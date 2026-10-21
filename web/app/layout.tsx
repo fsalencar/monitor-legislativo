@@ -21,9 +21,9 @@ const nomes = Libre_Caslon_Text({
 });
 
 export const metadata: Metadata = {
-  title: "Monitor Legislativo",
+  title: { default: "Plenário Aberto — Você no plenário.", template: "%s | Plenário Aberto" },
   description:
-    "Quem ocupa cada cadeira na Câmara dos Deputados e no Senado Federal, e como votou, com dados das fontes oficiais.",
+    "Quem ocupa cada cadeira na Câmara dos Deputados, no Senado Federal e nas Assembleias Legislativas, como votou, o que propôs e quanto gastou da cota, com dados das fontes oficiais.",
   // Verificação do site no AdSense (meta tag google-adsense-account).
   ...(ADSENSE && { other: { "google-adsense-account": ADSENSE } }),
 };
@@ -57,7 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   fill="currentColor"
                 />
               </svg>
-              Monitor Legislativo
+              Plenário Aberto
             </Link>
             <nav aria-label="Seções" className="secoes">
               <Link href="/proposicoes">Proposições</Link>

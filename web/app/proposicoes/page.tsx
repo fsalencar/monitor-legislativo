@@ -6,7 +6,7 @@ import { nomeDaCasa } from "../proposicao/[id]/casas";
 import p from "../parlamentar/[id]/perfil.module.css";
 import styles from "../proposicao/[id]/proposicao.module.css";
 
-export const metadata = { title: "Buscar proposições | Monitor Legislativo" };
+export const metadata = { title: "Buscar proposições" };
 
 export default function Page(props: PageProps<"/proposicoes">) {
   return (

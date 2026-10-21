@@ -19,7 +19,7 @@ TIPOS_PROJETO = {"PL", "PLS", "PLP", "PEC", "PDL", "PDS", "PRS", "MPV", "PLV", "
 
 
 def _cliente() -> httpx.Client:
-    return httpx.Client(base_url=BASE, headers={"Accept": "application/json", "User-Agent": "monitor-legislativo (ingestao)"},
+    return httpx.Client(base_url=BASE, headers={"Accept": "application/json", "User-Agent": "plenario-aberto (ingestao)"},
                         timeout=120, follow_redirects=True)
 
 

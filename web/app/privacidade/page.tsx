@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import styles from "../textos.module.css";
 
 export const metadata: Metadata = {
-  title: "Política de privacidade | Monitor Legislativo",
-  description: "Como o Monitor Legislativo trata dados de visitantes, cookies e anúncios.",
+  title: "Política de privacidade",
+  description: "Como o Plenário Aberto trata dados de visitantes, cookies e anúncios.",
 };
 
 const REPOSITORIO = "https://github.com/fsalencar/monitor-legislativo";
@@ -16,7 +16,7 @@ export default function Privacidade() {
 
       <div className={styles.destaque}>
         <p>
-          Em resumo: o Monitor Legislativo não tem cadastro, login nem formulários, e não coleta dados pessoais
+          Em resumo: o Plenário Aberto não tem cadastro, login nem formulários, e não coleta dados pessoais
           por conta própria. Os anúncios exibidos no site são do Google AdSense, que usa cookies conforme as
           regras do Google, descritas abaixo.
         </p>
@@ -24,7 +24,7 @@ export default function Privacidade() {
 
       <h2>Quais dados o site coleta</h2>
       <p>
-        O Monitor Legislativo não pede nem armazena dados pessoais de visitantes: não há cadastro, login,
+        O Plenário Aberto não pede nem armazena dados pessoais de visitantes: não há cadastro, login,
         comentários ou formulários. O site não usa ferramentas próprias de análise de audiência.
       </p>
       <p>

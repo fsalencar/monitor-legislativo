@@ -1,4 +1,6 @@
-# monitor-legislativo
+# Plenário Aberto
+
+Você no plenário. Site apartidário com os dados oficiais do Congresso e das Assembleias Legislativas.
 
 Site apartidário de transparência legislativa: quem ocupa cada cadeira na Câmara, no Senado e nas Câmaras Municipais, com dados brutos das fontes oficiais. Veja [CLAUDE.md](CLAUDE.md) para objetivos e princípios.
 

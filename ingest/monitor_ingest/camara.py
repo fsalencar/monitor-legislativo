@@ -13,7 +13,7 @@ class CamaraClient:
     def __init__(self, workers: int = 8):
         self.http = httpx.Client(
             base_url=BASE_URL,
-            headers={"Accept": "application/json", "User-Agent": "monitor-legislativo (ingestao)"},
+            headers={"Accept": "application/json", "User-Agent": "plenario-aberto (ingestao)"},
             timeout=30,
         )
         self.workers = workers

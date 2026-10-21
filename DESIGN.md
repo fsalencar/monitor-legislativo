@@ -1,5 +1,5 @@
 ---
-name: Monitor Legislativo
+name: Plenário Aberto
 description: O plenário como carta do céu noturno; dados oficiais do Congresso, sem opinião.
 colors:
   ceu: "#0a1021"
@@ -127,7 +127,7 @@ components:
     padding: "0.25rem 0.7rem"
 ---
 
-# Design System: Monitor Legislativo
+# Design System: Plenário Aberto
 
 ## Overview
 

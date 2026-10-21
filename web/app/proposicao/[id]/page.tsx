@@ -17,7 +17,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/proposicao/[id]">) {
   const id = idDoParametro((await params).id);
   const pr = id ? await getProposicao(id) : null;
-  return { title: pr ? `${pr.sigla} | Monitor Legislativo` : "Monitor Legislativo" };
+  return pr ? { title: pr.sigla } : {};
 }
 
 const dataCurta = new Intl.DateTimeFormat("pt-BR", {

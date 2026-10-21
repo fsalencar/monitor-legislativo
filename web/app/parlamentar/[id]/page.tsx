@@ -33,7 +33,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/parlamentar/[id]">) {
   const id = idDoParametro((await params).id);
   const perfil = id ? await getPerfil(id) : null;
-  return { title: perfil ? `${perfil.nome} | Monitor Legislativo` : "Monitor Legislativo" };
+  return perfil ? { title: perfil.nome } : {};
 }
 
 const ano = (iso: string) => iso.slice(0, 4);

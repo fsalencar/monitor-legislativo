@@ -167,7 +167,7 @@ def _mapa_nome_uf(conn: psycopg.Connection) -> dict[tuple[str, str], int]:
 
 
 def presencas(conn: psycopg.Connection, desde: date, ate: date) -> int:
-    http = httpx.Client(timeout=60, headers={"User-Agent": "monitor-legislativo (ingestao)"})
+    http = httpx.Client(timeout=60, headers={"User-Agent": "plenario-aberto (ingestao)"})
     por_carteira, por_nome = _mapa_carteira(conn, http), _mapa_nome_uf(conn)
     conn.commit()  # cada dia grava na sua própria transação (ver autorias)
     n, sem_vinculo = 0, set()

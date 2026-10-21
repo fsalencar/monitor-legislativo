@@ -1,4 +1,6 @@
-# Monitor Legislativo — contexto do projeto
+# Plenário Aberto — contexto do projeto
+
+> Nome anterior: Monitor Legislativo (trocado porque o nome já existia). Slogan: "Você no plenário."
 
 ## Objetivo
 Site **apartidário** de transparência legislativa. Mostra as cadeiras ocupadas na Câmara dos Deputados, no Senado Federal (e sessões do Congresso Nacional) e em Câmaras Municipais, e quem as ocupa.

@@ -6,8 +6,8 @@ import CopiarPix from "./CopiarPix";
 import estilos from "./doacao.module.css";
 
 export const metadata: Metadata = {
-  title: "Ajude o projeto | Monitor Legislativo",
-  description: "Contribua para manter o Monitor Legislativo independente e no ar.",
+  title: "Ajude o projeto",
+  description: "Contribua para manter o Plenário Aberto independente e no ar.",
 };
 
 export default function Doacao() {
@@ -15,10 +15,10 @@ export default function Doacao() {
   return (
     <main className={`moldura ${styles.pagina}`}>
       <h1>Ajude o projeto</h1>
-      <p className={styles.atualizado}>Faça sua contribuição para manter o Monitor Legislativo no ar.</p>
+      <p className={styles.atualizado}>Faça sua contribuição para manter o Plenário Aberto no ar.</p>
 
       <p>
-        O Monitor Legislativo é independente: não tem vínculo com partidos, parlamentares ou governos. Os custos
+        O Plenário Aberto é independente: não tem vínculo com partidos, parlamentares ou governos. Os custos
         de hospedagem, banco de dados e atualização diária dos dados são pagos com anúncios discretos e com
         contribuições de quem usa o site. Qualquer valor ajuda a manter os dados oficiais acessíveis para todos.
       </p>

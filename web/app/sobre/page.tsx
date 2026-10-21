@@ -3,8 +3,8 @@ import Link from "next/link";
 import styles from "../textos.module.css";
 
 export const metadata: Metadata = {
-  title: "Sobre | Monitor Legislativo",
-  description: "O que é o Monitor Legislativo, de onde vêm os dados e como o site se mantém.",
+  title: "Sobre",
+  description: "O que é o Plenário Aberto, de onde vêm os dados e como o site se mantém.",
 };
 
 const REPOSITORIO = "https://github.com/fsalencar/monitor-legislativo";
@@ -12,11 +12,11 @@ const REPOSITORIO = "https://github.com/fsalencar/monitor-legislativo";
 export default function Sobre() {
   return (
     <main className={`moldura ${styles.pagina}`}>
-      <h1>Sobre o Monitor Legislativo</h1>
+      <h1>Sobre o Plenário Aberto</h1>
       <p className={styles.atualizado}>Um site independente e apartidário de transparência legislativa.</p>
 
       <p>
-        O Monitor Legislativo mostra quem ocupa cada cadeira da Câmara dos Deputados e do Senado Federal e o
+        O Plenário Aberto mostra quem ocupa cada cadeira da Câmara dos Deputados e do Senado Federal e o
         que cada parlamentar faz no mandato: como votou, quais projetos apresentou, a presença nas sessões e
         os períodos de afastamento. A ideia é que qualquer pessoa consiga entender isso em poucos segundos, sem
         precisar navegar pelos sites oficiais.

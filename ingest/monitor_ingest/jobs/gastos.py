@@ -31,7 +31,7 @@ Totais = dict[tuple[int, int, int, str], list]  # (parlamentar, ano, mês, categ
 
 
 def _cliente() -> httpx.Client:
-    return httpx.Client(timeout=600, follow_redirects=True, headers={"User-Agent": "monitor-legislativo (ingestao)"})
+    return httpx.Client(timeout=600, follow_redirects=True, headers={"User-Agent": "plenario-aberto (ingestao)"})
 
 
 def _somar(totais: Totais, pid: int, ano: int, mes: int, categoria: str, valor: Decimal) -> None:

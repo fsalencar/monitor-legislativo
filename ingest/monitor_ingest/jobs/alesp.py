@@ -78,7 +78,7 @@ def _texto(el: ET.Element, campo: str) -> str:
 
 
 def autorias(conn: psycopg.Connection) -> int:
-    http = httpx.Client(timeout=300, follow_redirects=True, headers={"User-Agent": "monitor-legislativo (ingestao)"})
+    http = httpx.Client(timeout=300, follow_redirects=True, headers={"User-Agent": "plenario-aberto (ingestao)"})
 
     # IdSPL (autor) -> id interno, para os deputados que estão no banco.
     ids = dict(conn.execute("select id_fonte, id from parlamentar where casa_id = %s", (CASA,)).fetchall())
@@ -191,7 +191,7 @@ def _situacao_presenca(bruta: str) -> tuple[str, str | None] | None:
 
 def presencas(conn: psycopg.Connection, desde: date) -> int:
     """Presença de cada deputado em exercício nas sessões deliberativas do plenário, mês a mês."""
-    http = httpx.Client(timeout=60, follow_redirects=True, headers={"User-Agent": "monitor-legislativo (ingestao)"})
+    http = httpx.Client(timeout=60, follow_redirects=True, headers={"User-Agent": "plenario-aberto (ingestao)"})
     deputados = conn.execute(
         r"""select p.id, substring(p.url_fonte from 'matricula=(\d+)') from parlamentar p
            join mandato m on m.parlamentar_id = p.id where m.casa_id = %s and m.em_exercicio""", (CASA,)).fetchall()
@@ -341,7 +341,7 @@ def votacoes(conn: psycopg.Connection, desde_ano: int = 2023) -> int:
     Só grava a votação se a contagem lida do PDF bater com os totais impressos no próprio
     relatório e se todos os nomes forem identificados; senão, avisa e pula.
     """
-    http = httpx.Client(timeout=120, follow_redirects=True, headers={"User-Agent": "monitor-legislativo (ingestao)"})
+    http = httpx.Client(timeout=120, follow_redirects=True, headers={"User-Agent": "plenario-aberto (ingestao)"})
     lista = [v for a in range(desde_ano, date.today().year + 1)
              for v in http.get(f"{URL_PORTAL}/votacao/{a}").raise_for_status().json()]
     feitas = {r[0] for r in conn.execute("select id_fonte from votacao where casa_id = %s", (CASA,))}

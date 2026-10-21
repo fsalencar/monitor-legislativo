@@ -64,7 +64,7 @@ def camara(conn: psycopg.Connection, api: CamaraClient, desde: int, ate: int) ->
 
 def congresso(conn: psycopg.Connection, desde: int, ate: int) -> int:
     http = httpx.Client(base_url="https://legis.senado.leg.br/dadosabertos", timeout=180, follow_redirects=True,
-                        headers={"Accept": "application/json", "User-Agent": "monitor-legislativo (ingestao)"})
+                        headers={"Accept": "application/json", "User-Agent": "plenario-aberto (ingestao)"})
     n = 0
     for ano in range(desde, ate + 1):
         procs = http.get("/processo", params={"autor": AUTOR_SENADO, "ano": ano}).json()
