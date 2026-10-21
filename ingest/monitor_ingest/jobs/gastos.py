@@ -51,7 +51,23 @@ def _gravar(conn: psycopg.Connection, casa: str, anos: list[int], totais: Totais
     return len(totais)
 
 
-def camara(conn: psycopg.Connection, anos: list[int]) -> int:
+def _gravar_anual(conn: psycopg.Connection, casa: str, anos: list[int], totais: Totais) -> int:
+    """Anos anteriores ao detalhamento mensal: só o total por parlamentar e ano."""
+    por_ano: dict[tuple[int, int], list] = {}
+    for (pid, ano, _mes, _cat), (v, n) in totais.items():
+        t = por_ano.setdefault((pid, ano), [Decimal(0), 0])
+        t[0] += v
+        t[1] += n
+    with conn.transaction(), conn.cursor() as cur:
+        cur.execute("""delete from despesa_anual d using parlamentar p
+                       where p.id = d.parlamentar_id and p.casa_id = %s and d.ano = any(%s)""", (casa, anos))
+        cur.executemany("insert into despesa_anual (parlamentar_id, ano, valor, documentos) values (%s, %s, %s, %s)",
+                        [(pid, ano, round(v, 2), n) for (pid, ano), (v, n) in por_ano.items()])
+    avisar()
+    return len(por_ano)
+
+
+def camara(conn: psycopg.Connection, anos: list[int], anual: bool = False) -> int:
     ids = dict(conn.execute("select id_fonte, id from parlamentar where casa_id = 'camara'").fetchall())
     conn.commit()
     http, totais = _cliente(), {}
@@ -69,14 +85,14 @@ def camara(conn: psycopg.Connection, anos: list[int]) -> int:
                         _somar(totais, pid, int(linha["numAno"]), int(linha["numMes"]), linha["txtDescricao"],
                                Decimal(linha["vlrLiquido"]))
         print(f"  câmara {ano}: lido", flush=True)
-    return _gravar(conn, "camara", anos, totais)
+    return (_gravar_anual if anual else _gravar)(conn, "camara", anos, totais)
 
 
 def _nome(s: str) -> str:
     return re.sub(r"\s+", " ", unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode().upper()).strip()
 
 
-def senado(conn: psycopg.Connection, anos: list[int]) -> int:
+def senado(conn: psycopg.Connection, anos: list[int], anual: bool = False) -> int:
     por_nome, civis = defaultdict(set), []
     for pid, nome, civil in conn.execute("select id, nome, nome_civil from parlamentar where casa_id = 'senado'"):
         por_nome[_nome(nome)].add(pid)
@@ -108,10 +124,10 @@ def senado(conn: psycopg.Connection, anos: list[int]) -> int:
     if sem_vinculo:
         print(f"AVISO: {len(sem_vinculo)} senadores da planilha sem vínculo (ex-senadores ou nome diferente): "
               f"{sorted(sem_vinculo)[:8]}")
-    return _gravar(conn, "senado", anos, totais)
+    return (_gravar_anual if anual else _gravar)(conn, "senado", anos, totais)
 
 
-def alesp(conn: psycopg.Connection, anos: list[int]) -> int:
+def alesp(conn: psycopg.Connection, anos: list[int], anual: bool = False) -> int:
     ids = {int(m): pid for pid, m in conn.execute(
         r"""select id, substring(url_fonte from 'matricula=(\d+)') from parlamentar
             where casa_id = 'al-sp' and url_fonte like '%%matricula=%%'""")}
@@ -132,4 +148,4 @@ def alesp(conn: psycopg.Connection, anos: list[int]) -> int:
                 tipo = re.sub(r"^[A-Z]{1,2} - ", "", (el.findtext("Tipo") or "Não informado").strip())
                 _somar(totais, pid, ano, int(el.findtext("Mes")), tipo, Decimal(el.findtext("Valor")))
             el.clear()
-    return _gravar(conn, "al-sp", anos, totais)
+    return (_gravar_anual if anual else _gravar)(conn, "al-sp", anos, totais)

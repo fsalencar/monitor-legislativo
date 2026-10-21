@@ -20,7 +20,7 @@ export function Autoria({ id, casa, autorias }: { id: number; casa: CasaId; auto
   const { total, porDesfecho, projetos } = autorias;
   const n = (x: number) => numero.format(x);
   return (
-    <section className={styles.secao}>
+    <section id="projetos" className={styles.secao}>
       <h2>Projetos de autoria</h2>
       {total === 0 ? (
         <p className={styles.nota}>
@@ -60,7 +60,7 @@ export function Autoria({ id, casa, autorias }: { id: number; casa: CasaId; auto
 export function PresencaSessoes({ casa, presenca }: { casa: CasaId; presenca: Presenca }) {
   const { sessoes, presencas, ausenciasJustificadas, ausencias, faltas } = presenca;
   return (
-    <section className={styles.secao}>
+    <section id="presenca" className={styles.secao}>
       <h2>Presença em sessões deliberativas</h2>
       {casa === "senado" ? (
         <p className={styles.nota}>{PRESENCA_SENADO}</p>
@@ -122,7 +122,7 @@ export function Afastamentos({
   tempoMandatoAtual: { diasAfastado: number; diasDecorridos: number } | null;
 }) {
   return (
-    <section className={styles.secao}>
+    <section id="afastamentos" className={styles.secao}>
       <h2>Afastamentos e licenças</h2>
       {tempoMandatoAtual && (
         <p className={styles.desfechoResumo}>

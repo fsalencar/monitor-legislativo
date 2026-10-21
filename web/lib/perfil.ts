@@ -430,6 +430,10 @@ export type Gastos = {
   ate: { ano: number; mes: number } | null;
   porAno: { ano: number; valor: number }[];
   porCategoria: { categoria: string; valor: number; documentos: number }[];
+  // Mês a mês (desde 2023), para somar só a legislatura atual.
+  porMes: { ano: number; mes: number; valor: number }[];
+  // Anos anteriores ao detalhamento mensal (só o total do ano).
+  anteriores: { ano: number; valor: number }[];
 };
 
 // Gastos da cota/verba parlamentar (totais por mês e categoria, ver ingest/jobs/gastos.py).
@@ -446,6 +450,9 @@ export async function getGastos(id: number): Promise<Gastos> {
     from despesa_mensal where parlamentar_id = ${id}
     group by categoria order by sum(valor) desc
   `;
+  const anteriores = await sql<{ ano: number; valor: string }[]>`
+    select ano, valor from despesa_anual where parlamentar_id = ${id} order by ano
+  `;
   const porAno = new Map<number, number>();
   for (const m of meses) porAno.set(m.ano, (porAno.get(m.ano) ?? 0) + Number(m.valor));
   const primeiro = meses[0];
@@ -457,5 +464,7 @@ export async function getGastos(id: number): Promise<Gastos> {
     ate: ultimo ? { ano: ultimo.ano, mes: ultimo.mes } : null,
     porAno: [...porAno].map(([ano, valor]) => ({ ano, valor })),
     porCategoria: porCategoria.map((c) => ({ categoria: c.categoria, valor: Number(c.valor), documentos: Number(c.documentos) })),
+    porMes: meses.map((m) => ({ ano: m.ano, mes: m.mes, valor: Number(m.valor) })),
+    anteriores: anteriores.map((a) => ({ ano: a.ano, valor: Number(a.valor) })),
   };
 }

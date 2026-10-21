@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Afastamentos, Autoria, PresencaSessoes } from "./atividade";
 import { GastosCota } from "./gastos";
+import { Resumo } from "./resumo";
 import {
   type TempoAfastado,
   getAfastamentos,
@@ -69,6 +70,14 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
       <div className={styles.colunas}>
         <div className={styles.principal}>
           <Cabecalho p={p} />
+          <Resumo
+            p={p}
+            autoria={autoria}
+            presenca={presenca}
+            gastos={gastos}
+            // Afastamentos carregados: Câmara, Senado e ALESP; nas demais casas "0 dias" seria enganoso.
+            tempoMandatoAtual={!assembleia || p.casa === "al-sp" ? tempoMandatoAtual(p, tempoAfastado) : null}
+          />
           {p.casa === "al-sp" ? (
             <>
               <Votos
@@ -144,7 +153,7 @@ function Cabecalho({ p }: { p: Perfil }) {
 
 function Votos({ p, cobertura }: { p: Perfil; cobertura: string }) {
   return (
-    <section className={styles.secao}>
+    <section id="votos" className={styles.secao}>
       <h2>Votos em votações nominais</h2>
       <p className={styles.nota}>
         {p.totalVotos === 0

@@ -36,6 +36,8 @@ def main() -> None:
     sub.add_parser("alesp-autorias", help="projetos de autoria dos deputados de SP, com a situação oficial")
     gp = sub.add_parser("gastos", help="gastos das cotas parlamentares (Câmara, Senado, ALESP), por mês e categoria")
     gp.add_argument("--desde", type=int, default=date.today().year - 1, help="ano inicial (padrão: ano passado)")
+    gp.add_argument("--historico", action="store_true",
+                    help="só o total por ano de 2008 a 2022 (antes do detalhamento mensal)")
     sub.add_parser("alesp-votacoes", help="votações nominais do plenário da ALESP (relatórios em PDF)")
     ap = sub.add_parser("alesp-presencas", help="presença dos deputados de SP nas sessões deliberativas do plenário")
     ap.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=62))
@@ -66,13 +68,13 @@ def main() -> None:
         return
 
     if args.cmd == "gastos":
-        anos = list(range(args.desde, date.today().year + 1))
+        anos = list(range(2008, 2023)) if args.historico else list(range(args.desde, date.today().year + 1))
         falhas = []
         for casa, job in (("camara", gastos.camara), ("senado", gastos.senado), ("al-sp", gastos.alesp)):
             try:
-                with db.connect() as conn, db.execucao(conn, f"gastos-{casa}") as stats:
-                    stats["registros"] = job(conn, anos)
-                print(f"gastos-{casa}: {stats['registros']} totais mensais")
+                with db.connect() as conn, db.execucao(conn, f"gastos-{casa}" + ("-historico" if args.historico else "")) as stats:
+                    stats["registros"] = job(conn, anos, anual=args.historico)
+                print(f"gastos-{casa}: {stats['registros']} totais {'anuais' if args.historico else 'mensais'}")
             except Exception as e:  # noqa: BLE001 - uma fonte fora do ar não impede as outras
                 falhas.append(casa)
                 print(f"gastos-{casa}: falhou ({e!r})"[:300])

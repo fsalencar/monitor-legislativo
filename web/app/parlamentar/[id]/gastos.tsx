@@ -16,9 +16,9 @@ const NOME_COTA: Partial<Record<CasaId, string>> = {
 export function GastosCota({ casa, gastos, urlFonte }: { casa: CasaId; gastos: Gastos; urlFonte: string }) {
   const cota = NOME_COTA[casa];
   if (!cota) return null;
-  const { total, documentos, desde, ate, porAno, porCategoria } = gastos;
+  const { total, documentos, desde, ate, porAno, porCategoria, anteriores } = gastos;
   return (
-    <section className={styles.secao}>
+    <section id="gastos" className={styles.secao}>
       <h2>Gastos da cota parlamentar</h2>
       {total === 0 ? (
         <p className={styles.nota}>Nenhum gasto registrado na {cota} desde 2023.</p>
@@ -44,7 +44,9 @@ export function GastosCota({ casa, gastos, urlFonte }: { casa: CasaId; gastos: G
           </p>
           <div className={styles.tabelaRolagem}>
             <table className={styles.tabela}>
-              <caption className={styles.legendaGastos}>Por ano</caption>
+              <caption className={styles.legendaGastos}>
+                Por ano{anteriores.length > 0 && " (antes de 2023, só o total do ano; o detalhe está na fonte oficial)"}
+              </caption>
               <thead>
                 <tr>
                   <th scope="col">Ano</th>
@@ -54,7 +56,7 @@ export function GastosCota({ casa, gastos, urlFonte }: { casa: CasaId; gastos: G
                 </tr>
               </thead>
               <tbody>
-                {porAno.map((a) => (
+                {[...anteriores, ...porAno].map((a) => (
                   <tr key={a.ano}>
                     <td>{a.ano}</td>
                     <td className={styles.valor}>{reais.format(a.valor)}</td>
