@@ -142,6 +142,27 @@ h3 {
   flex: none;
 }
 
+/* Links de seção ao lado da marca. */
+.secoes {
+  display: flex;
+  gap: 1.25rem;
+  margin-right: auto;
+  padding-left: 0.5rem;
+}
+
+.secoes a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--poeira);
+  text-decoration: none;
+  font-size: 0.9375rem;
+}
+
+.secoes a:hover {
+  color: var(--ambar);
+}
+
 .barra p {
   margin: 0;
   color: var(--nevoa);

@@ -1,0 +1,293 @@
+/* Busca de proposições e página de uma proposição (usa também os estilos do perfil). */
+
+.topo {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fonte-nomes), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.1rem, 1.5rem + 2.6vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+}
+
+.casa {
+  margin: 0;
+  color: var(--nevoa);
+}
+
+.ementa {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 1.0625rem;
+}
+
+/* Busca */
+.busca {
+  display: grid;
+  gap: 0.4rem;
+  max-width: 40rem;
+}
+
+.busca label {
+  color: var(--nevoa);
+  font-size: 0.9375rem;
+}
+
+.busca div {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.busca input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--indigo);
+  color: var(--poeira);
+  font: inherit;
+}
+
+.busca input:focus-visible {
+  outline: 2px solid var(--ambar);
+  outline-offset: 1px;
+}
+
+.busca button,
+.botao {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--ambar);
+  border-radius: var(--raio);
+  background: none;
+  color: var(--ambar);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+}
+
+.resultados {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.resultado {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.9rem 0.25rem;
+  border-bottom: 1px solid var(--linha);
+  color: inherit;
+  text-decoration: none;
+}
+
+.resultado:hover strong,
+.resultado:focus-visible strong {
+  color: var(--ambar);
+}
+
+.resultadoTopo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.9rem;
+  color: var(--nevoa);
+  font-size: 0.875rem;
+}
+
+.resultadoTopo strong {
+  color: var(--poeira);
+  font-size: 1.0625rem;
+}
+
+.resultadoEmenta {
+  max-width: 72ch;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Autoria */
+.autores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+}
+
+.autores a {
+  color: var(--poeira);
+}
+
+/* Votações */
+.votacoes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.votacao {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.resultadoVotacao {
+  color: var(--poeira);
+  font-weight: 700;
+}
+
+.simbolica {
+  margin: 0;
+  color: var(--nevoa);
+  font-size: 0.9375rem;
+}
+
+.placar {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.placar li {
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.placar strong {
+  margin-right: 0.15rem;
+}
+
+.detalhe summary {
+  width: fit-content;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  color: var(--poeira);
+  cursor: pointer;
+}
+
+.legendaTabela {
+  caption-side: bottom;
+  padding-top: 0.4rem;
+  color: var(--nevoa);
+  font-size: 0.8125rem;
+  text-align: left;
+}
+
+/* Lista nominal */
+.nominal {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.filtros button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  background: var(--indigo);
+  color: var(--poeira);
+  font: inherit;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.filtros button span {
+  color: var(--nevoa);
+  font-variant-numeric: tabular-nums;
+}
+
+.filtros button[aria-pressed="true"] {
+  border-color: var(--ambar);
+  color: var(--ambar);
+}
+
+.filtros input {
+  flex: 1 1 12rem;
+  min-height: 2.5rem;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--indigo);
+  color: var(--poeira);
+  font: inherit;
+  font-size: 0.9375rem;
+}
+
+.listaNominal {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0 1.5rem;
+  max-height: 28rem;
+  overflow-y: auto;
+  border-block: 1px solid var(--linha);
+}
+
+.listaNominal li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.6rem;
+  align-items: baseline;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--linha);
+  font-size: 0.9375rem;
+}
+
+.listaNominal a {
+  color: var(--poeira);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listaNominal li span {
+  color: var(--nevoa);
+  font-size: 0.8125rem;
+}
+
+.listaNominal li span[data-voto] {
+  color: var(--poeira);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.erro {
+  margin: 0;
+  color: var(--ambar);
+}

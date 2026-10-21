@@ -15,6 +15,7 @@ export type Legislatura = {
 };
 
 export type ProposicaoVotada = {
+  id: number;
   tipo: string;
   sigla: string;
   ementa: string | null;
@@ -396,7 +397,7 @@ async function consultarVotos(id: number, limite: number | null, inicio: number)
     select v.id as votacao_id, v.data_hora, v.descricao, v.sigla_orgao, v.aprovacao,
            vo.voto, vo.sigla_partido, v.url_fonte,
            (select json_agg(json_build_object(
-                     'tipo', pr.sigla_tipo,
+                     'id', pr.id, 'tipo', pr.sigla_tipo,
                      'sigla', pr.sigla_tipo || ' ' || pr.numero || '/' || pr.ano,
                      'ementa', pr.ementa, 'resumo', pr.resumo_simples, 'temas', pr.palavras_chave,
                      'situacao', pr.situacao, 'url', pr.url_fonte, 'urlTexto', pr.url_inteiro_teor)

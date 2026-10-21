@@ -59,6 +59,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </svg>
               Monitor Legislativo
             </Link>
+            <nav aria-label="Seções" className="secoes">
+              <Link href="/proposicoes">Proposições</Link>
+            </nav>
             <p>Dados oficiais do Congresso, sem opiniões pessoais ou manipulação de dados.</p>
           </div>
         </header>
