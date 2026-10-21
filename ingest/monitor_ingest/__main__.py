@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from . import db
 from .site import avisar
 from .camara import CamaraClient
-from .jobs import (alesp, camara_atividade, camara_deputados, camara_votacoes, estaduais, presidente, resumos,
+from .jobs import (alesp, camara_atividade, gastos, camara_deputados, camara_votacoes, estaduais, presidente, resumos,
                    senado_atividade, senado_senadores)
 
 
@@ -34,6 +34,8 @@ def main() -> None:
     pres.add_argument("--ate", type=date.fromisoformat, default=date.today())
     sub.add_parser("estaduais", help="deputados estaduais em exercício (Assembleias com dados abertos)")
     sub.add_parser("alesp-autorias", help="projetos de autoria dos deputados de SP, com a situação oficial")
+    gp = sub.add_parser("gastos", help="gastos das cotas parlamentares (Câmara, Senado, ALESP), por mês e categoria")
+    gp.add_argument("--desde", type=int, default=date.today().year - 1, help="ano inicial (padrão: ano passado)")
     sub.add_parser("alesp-votacoes", help="votações nominais do plenário da ALESP (relatórios em PDF)")
     ap = sub.add_parser("alesp-presencas", help="presença dos deputados de SP nas sessões deliberativas do plenário")
     ap.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=62))
@@ -61,6 +63,21 @@ def main() -> None:
         with db.connect() as conn, db.execucao(conn, args.cmd) as stats:
             stats["registros"] = alesp.autorias(conn)
         print(f"alesp-autorias: {stats['registros']} projetos")
+        return
+
+    if args.cmd == "gastos":
+        anos = list(range(args.desde, date.today().year + 1))
+        falhas = []
+        for casa, job in (("camara", gastos.camara), ("senado", gastos.senado), ("al-sp", gastos.alesp)):
+            try:
+                with db.connect() as conn, db.execucao(conn, f"gastos-{casa}") as stats:
+                    stats["registros"] = job(conn, anos)
+                print(f"gastos-{casa}: {stats['registros']} totais mensais")
+            except Exception as e:  # noqa: BLE001 - uma fonte fora do ar não impede as outras
+                falhas.append(casa)
+                print(f"gastos-{casa}: falhou ({e!r})"[:300])
+        if falhas:
+            sys.exit(1)
         return
 
     if args.cmd == "alesp-votacoes":

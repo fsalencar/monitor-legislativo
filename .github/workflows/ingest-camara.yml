@@ -74,6 +74,9 @@ jobs:
       - run: python -m monitor_ingest estaduais
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest gastos
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: python -m monitor_ingest alesp-votacoes
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

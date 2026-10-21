@@ -2,12 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Afastamentos, Autoria, PresencaSessoes } from "./atividade";
+import { GastosCota } from "./gastos";
 import {
   type TempoAfastado,
   getAfastamentos,
   getTempoAfastado,
   VOTOS_POR_PAGINA,
   getAutorias,
+  getGastos,
   getCoberturaVotosCompleta,
   getPresenca,
   idDoParametro,
@@ -46,12 +48,13 @@ export default function Page(props: PageProps<"/parlamentar/[id]">) {
 async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["params"] }) {
   const id = idDoParametro((await params).id);
   if (!id) notFound();
-  const [p, autoria, presenca, afastamentos, tempoAfastado] = await Promise.all([
+  const [p, autoria, presenca, afastamentos, tempoAfastado, gastos] = await Promise.all([
     getPerfil(id),
     getAutorias(id),
     getPresenca(id),
     getAfastamentos(id),
     getTempoAfastado(id),
+    getGastos(id),
   ]);
   if (!p) notFound();
   const assembleia = ehAssembleia(p.casa);
@@ -97,6 +100,7 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
               <Afastamentos casa={p.casa} afastamentos={afastamentos} tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)} />
             </>
           )}
+          <GastosCota casa={p.casa} gastos={gastos} urlFonte={p.urlFonte} />
           <Mandatos p={p} tempoAfastado={tempoAfastado} />
         </div>
 

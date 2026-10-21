@@ -422,3 +422,40 @@ async function consultarVotos(id: number, limite: number | null, inicio: number)
     proposicoes: v.proposicoes ?? [],
   }));
 }
+
+export type Gastos = {
+  total: number;
+  documentos: number;
+  desde: { ano: number; mes: number } | null;
+  ate: { ano: number; mes: number } | null;
+  porAno: { ano: number; valor: number }[];
+  porCategoria: { categoria: string; valor: number; documentos: number }[];
+};
+
+// Gastos da cota/verba parlamentar (totais por mês e categoria, ver ingest/jobs/gastos.py).
+export async function getGastos(id: number): Promise<Gastos> {
+  "use cache";
+  cacheDados();
+  const meses = await sql<{ ano: number; mes: number; valor: string; documentos: string }[]>`
+    select ano, mes, sum(valor) as valor, sum(documentos) as documentos
+    from despesa_mensal where parlamentar_id = ${id}
+    group by ano, mes order by ano, mes
+  `;
+  const porCategoria = await sql<{ categoria: string; valor: string; documentos: string }[]>`
+    select categoria, sum(valor) as valor, sum(documentos) as documentos
+    from despesa_mensal where parlamentar_id = ${id}
+    group by categoria order by sum(valor) desc
+  `;
+  const porAno = new Map<number, number>();
+  for (const m of meses) porAno.set(m.ano, (porAno.get(m.ano) ?? 0) + Number(m.valor));
+  const primeiro = meses[0];
+  const ultimo = meses[meses.length - 1];
+  return {
+    total: meses.reduce((s, m) => s + Number(m.valor), 0),
+    documentos: meses.reduce((s, m) => s + Number(m.documentos), 0),
+    desde: primeiro ? { ano: primeiro.ano, mes: primeiro.mes } : null,
+    ate: ultimo ? { ano: ultimo.ano, mes: ultimo.mes } : null,
+    porAno: [...porAno].map(([ano, valor]) => ({ ano, valor })),
+    porCategoria: porCategoria.map((c) => ({ categoria: c.categoria, valor: Number(c.valor), documentos: Number(c.documentos) })),
+  };
+}
