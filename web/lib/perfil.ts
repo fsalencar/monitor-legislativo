@@ -279,7 +279,8 @@ export async function getTempoAfastado(id: number): Promise<TempoAfastado[]> {
     select m.legislatura,
            coalesce((select sum(upper(r) - lower(r))::int
                      from unnest(af.periodos * datemultirange(
-                            daterange(l.data_inicio, least(l.data_fim, current_date) + 1, '[)'))) r), 0) as dias_afastado,
+                            -- greatest: legislatura futura (ex.: 2ª metade do mandato de senador) vira período vazio
+                            daterange(l.data_inicio, greatest(least(l.data_fim, current_date) + 1, l.data_inicio), '[)'))) r), 0) as dias_afastado,
            greatest(least(l.data_fim, current_date) - l.data_inicio + 1, 0) as dias_decorridos
     from mandato m
     join legislatura l on l.casa_id = m.casa_id and l.numero = m.legislatura

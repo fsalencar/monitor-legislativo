@@ -19,6 +19,9 @@ import psycopg
 LEGISLATURA_SP = (20, "2023-03-15", "2027-03-14")
 URL_ALESP = "https://www.al.sp.gov.br/repositorioDados/deputados/deputados.xml"
 URL_ALMG = "https://dadosabertos.almg.gov.br/ws/deputados"
+# API do portal da ALESP (a mesma que a página oficial do deputado usa para mostrar a foto).
+URL_ALESP_DETALHES = "https://legis-api-portal-prd.al.sp.gov.br/parlamentar-portal/detalhes/{}"
+FOTO_ALESP = "https://www3.al.sp.gov.br/legis/{}"
 FOTO_ALMG = "https://www.almg.gov.br/export/sites/portal/a-assembleia/deputados/fotos/{}.jpg"
 URL_ALES = "https://www.al.es.gov.br/DadosAbertos/ParlamentaresData"
 URL_ALEPE = "https://dadosabertos.alepe.pe.gov.br/api/v1/parlamentares/"
@@ -116,7 +119,21 @@ def alesp(conn: psycopg.Connection) -> int:
             "url": f"https://www.al.sp.gov.br/deputado/?matricula={matricula}",
             "mandatos": [(LEGISLATURA_SP[0], (d.findtext("Partido") or "").strip() or None)],
         })
+    with ThreadPoolExecutor(4) as pool:
+        fotos = list(pool.map(_foto_alesp, [d["url"].rsplit("=", 1)[1] for d in deputados]))
+    for d, foto in zip(deputados, fotos):
+        d["foto"] = foto
     return _gravar(conn, "al-sp", [(*LEGISLATURA_SP, URL_ALESP)], deputados)
+
+
+def _foto_alesp(matricula: str) -> str | None:
+    """URL da foto oficial; sem foto (ou com a API fora do ar) fica a que já estava gravada."""
+    try:
+        r = _cliente().get(URL_ALESP_DETALHES.format(matricula))
+        caminho = ((r.json() or {}).get("biografia") or {}).get("txFotoGrande") if r.status_code == 200 else None
+    except (httpx.HTTPError, ValueError):
+        return None
+    return FOTO_ALESP.format(caminho.lstrip("/")) if caminho else None
 
 
 def almg(conn: psycopg.Connection) -> int:
