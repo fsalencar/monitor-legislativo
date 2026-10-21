@@ -111,8 +111,10 @@ def situacoes(conn: psycopg.Connection, api: CamaraClient, limite: int, dias: in
 # ---------- Afastamentos ----------
 
 def _eh_saida(item: dict) -> bool:
+    """Só os registros oficiais de saída. Outros registros feitos durante a licença (ex.: "Alteração de
+    partido") não são afastamento, embora a situação do deputado continue "Licença"."""
     desc = (item.get("descricaoStatus") or "").lower()
-    return item.get("situacao") in ("Licença", "SUSPENSO") or desc.startswith("saída - afastamento") and "término da legislatura" not in desc
+    return desc.startswith("saída - afastamento") and "término da legislatura" not in desc
 
 
 def afastamentos(conn: psycopg.Connection, api: CamaraClient) -> int:
