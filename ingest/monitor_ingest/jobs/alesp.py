@@ -8,14 +8,18 @@ Fontes (repositorioDados/processo_legislativo, atualizadas diariamente):
 A situação gravada é o texto oficial do andamento que define o desfecho, nesta ordem: lei (ou
 resolução, decreto legislativo, emenda constitucional) publicada; veto total; rejeição; retirada
 pelo autor; prejudicado; arquivo; senão, o último andamento (em tramitação).
-A ALESP não publica votos nominais nem presença em plenário em dados abertos.
+Presença em plenário: API do portal da ALESP (lista de presença por deputado e mês). Os votos
+nominais só existem em PDF anexo a cada votação e não são importados.
 """
 import os
 import re
 import tempfile
+import time
 import xml.etree.ElementTree as ET
 import zipfile
 from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date
 
 import httpx
 import psycopg
@@ -147,3 +151,88 @@ def autorias(conn: psycopg.Connection) -> int:
         n += len(lote)
         avisar()
     return n
+
+
+# ---------- Presença em plenário (API do portal da ALESP) ----------
+
+URL_PORTAL = "https://legis-api-portal-prd.al.sp.gov.br"
+URL_SESSAO = URL_PORTAL + "/sessoes-plenarias/{}"
+# Situações da lista de presença -> (situação no site, justificativa). Missão oficial conta como
+# ausência justificada, com o motivo oficial. Licenças e afastamentos não contam (o deputado estava
+# licenciado, como na Câmara); sessões não deliberativas também não.
+SITUACOES = {"Presente": ("Presença", None), "Justificada": ("Ausência justificada", None),
+             "Não Justificada": ("Ausência", None)}
+MISSAO = ("A Serviço do Poder Legislativo", "Em Audiência Pública", "Em Comissão Parlamentar de Inquérito",
+          "Em Comissão de Representação")
+NAO_CONTA = re.compile(r"^(sessão não deliberativa|licen|afastamento|indefinida)", re.I)
+
+
+def _situacao_presenca(bruta: str) -> tuple[str, str | None] | None:
+    """None quando a sessão não conta para o deputado ou a situação é desconhecida."""
+    if bruta in SITUACOES:
+        return SITUACOES[bruta]
+    if bruta in MISSAO:
+        return "Ausência justificada", bruta
+    if bruta.lower().startswith(("ausência", "ausente")):
+        return "Ausência", None
+    return None
+
+
+def presencas(conn: psycopg.Connection, desde: date) -> int:
+    """Presença de cada deputado em exercício nas sessões deliberativas do plenário, mês a mês."""
+    http = httpx.Client(timeout=60, follow_redirects=True, headers={"User-Agent": "monitor-legislativo (ingestao)"})
+    deputados = conn.execute(
+        """select p.id, substring(p.url_fonte from 'matricula=(\d+)') from parlamentar p
+           join mandato m on m.parlamentar_id = p.id where m.casa_id = %s and m.em_exercicio""", (CASA,)).fetchall()
+    conn.commit()
+    hoje = date.today()
+    meses = [(a, m) for a in range(desde.year, hoje.year + 1) for m in range(1, 13)
+             if (a, m) >= (desde.year, desde.month) and (a, m) <= (hoje.year, hoje.month)]
+
+    def buscar(tarefa):
+        pid, matricula, (ano, mes) = tarefa
+        for tentativa in range(4):
+            try:
+                r = http.get(f"{URL_PORTAL}/lista-presenca-parlamentar/{matricula}/{mes}/{ano}")
+                if r.status_code == 200:
+                    return pid, r.json() or []
+            except (httpx.HTTPError, ValueError):
+                pass
+            time.sleep(2 * (tentativa + 1))
+        raise RuntimeError(f"lista de presença indisponível: matrícula {matricula}, {mes}/{ano}")
+
+    tarefas = [(pid, mat, am) for pid, mat in deputados if mat for am in meses]
+    sessoes, registros, desconhecidas = {}, [], set()
+    with ThreadPoolExecutor(6) as pool:
+        for pid, itens in pool.map(buscar, tarefas):
+            for s in itens:
+                bruta = (s.get("situacao") or "").strip()
+                situacao = _situacao_presenca(bruta)
+                if situacao is None:
+                    if not NAO_CONTA.match(bruta):
+                        desconhecidas.add(bruta)
+                    continue
+                ids = str(s["idSessaoPlenaria"])
+                d, m_, a = s["data"].split("/")
+                if date(int(a), int(m_), int(d)) < desde:
+                    continue
+                sessoes[ids] = (f"{a}-{m_}-{d}", (s.get("tituloSessaoPlenaria") or "").split("ª ", 1)[-1] or None)
+                registros.append((ids, pid, *situacao))
+    if desconhecidas:
+        print(f"AVISO: situações de presença não reconhecidas (não gravadas): {sorted(desconhecidas)}", flush=True)
+
+    with conn.transaction(), conn.cursor() as cur:
+        cur.executemany(
+            """insert into sessao (casa_id, id_fonte, data_inicio, tipo, deliberativa, url_fonte)
+               values (%s, %s, %s, %s, true, %s)
+               on conflict (casa_id, id_fonte) do update set data_inicio = excluded.data_inicio, tipo = excluded.tipo""",
+            [(CASA, ids, data, tipo, URL_SESSAO.format(ids)) for ids, (data, tipo) in sessoes.items()])
+        ids_sessao = dict(cur.execute("select id_fonte, id from sessao where casa_id = %s and id_fonte = any(%s)",
+                                      (CASA, list(sessoes))).fetchall())
+        cur.execute("delete from presenca where sessao_id = any(%s) and parlamentar_id = any(%s)",
+                    (list(ids_sessao.values()), [pid for pid, _ in deputados]))
+        cur.executemany(
+            """insert into presenca (sessao_id, parlamentar_id, situacao, justificativa)
+               values (%s, %s, %s, %s) on conflict do nothing""",
+            [(ids_sessao[ids], pid, sit, just) for ids, pid, sit, just in registros])
+    return len(registros)

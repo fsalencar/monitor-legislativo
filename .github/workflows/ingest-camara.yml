@@ -77,6 +77,9 @@ jobs:
       - run: python -m monitor_ingest alesp-autorias
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: python -m monitor_ingest alesp-presencas
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: python -m monitor_ingest resumos --limite 150 --minutos 20
         if: env.GEMINI_API_KEY != ''
         env:

@@ -57,7 +57,7 @@ export function Autoria({ id, casa, autorias }: { id: number; casa: CasaId; auto
   );
 }
 
-export function PresencaSessoes({ casa, presenca }: { casa: string; presenca: Presenca }) {
+export function PresencaSessoes({ casa, presenca }: { casa: CasaId; presenca: Presenca }) {
   const { sessoes, presencas, ausenciasJustificadas, ausencias, faltas } = presenca;
   return (
     <section className={styles.secao}>
@@ -69,11 +69,14 @@ export function PresencaSessoes({ casa, presenca }: { casa: string; presenca: Pr
       ) : (
         <>
           <p className={styles.nota}>
-            Registro oficial de frequência da Câmara{" "}
+            Registro oficial de frequência {casa === "camara" ? "da Câmara" : `da ${SIGLA_CASA[casa].na.slice(3)}`}{" "}
             {sessoes === 1 ? "na única sessão deliberativa" : `nas ${sessoes} sessões deliberativas`} do plenário
             carregada{sessoes === 1 ? "" : "s"} até agora
             {presenca.primeiraSessao && `, desde ${dataCurta.format(new Date(presenca.primeiraSessao))}`}.
-            O recesso parlamentar é coletivo e não conta como ausência.
+            O recesso parlamentar é coletivo e não conta como ausência
+            {casa === "al-sp" &&
+              "; períodos de licença também não. Ausência em missão oficial (comissão de representação, CPI, audiência pública) conta como justificada, com o motivo"}
+            .
           </p>
           <dl className={styles.contagem}>
             <div>

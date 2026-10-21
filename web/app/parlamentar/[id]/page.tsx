@@ -70,11 +70,12 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
             <>
               <Autoria id={p.id} casa={p.casa} autorias={autoria} />
               <Anuncio posicao="secao" />
+              <PresencaSessoes casa={p.casa} presenca={presenca} />
               <section className={styles.secao}>
-                <h2>Votos e presença</h2>
+                <h2>Votos em votações nominais</h2>
                 <p className={styles.nota}>
-                  A ALESP não publica em dados abertos os votos nominais nem a presença dos deputados nas sessões do
-                  plenário. Afastamentos ainda não foram carregados. Consulte a página oficial do deputado.
+                  A ALESP publica o voto de cada deputado apenas em PDF, anexo a cada votação nominal do plenário;
+                  esses votos ainda não foram carregados aqui. Afastamentos também não.
                 </p>
               </section>
             </>
