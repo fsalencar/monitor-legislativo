@@ -12,4 +12,7 @@ export const GLOSSARIO: Record<string, string> = {
   MIS: "Ausente em missão oficial.",
   LS: "Em licença para tratamento de saúde.",
   LP: "Em licença particular.",
+  Licenciado: "O deputado estava licenciado do mandato na data da votação (ALESP).",
+  "Sem voto registrado": "O relatório oficial da votação não traz voto do deputado (ALESP).",
+  Presidente: "Quem preside a sessão; aparece sem voto no relatório oficial da votação (ALESP).",
 };

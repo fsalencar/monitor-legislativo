@@ -106,7 +106,10 @@ function ItemVoto({ v, partidoAtual }: { v: VotoRegistrado; partidoAtual: string
         {v.descricao && <p className={styles.votoDescricao}>{v.descricao}</p>}
         <SobreProjeto p={principal(v.proposicoes)} />
         <p className={styles.votoRodape}>
-          {v.partidoNoVoto && v.partidoNoVoto !== partidoAtual && <span>Partido na data: {v.partidoNoVoto}. </span>}
+          {/* Federação que inclui o partido atual (ALESP: "FED PT/PC DO B/PV") não é mudança de partido. */}
+          {v.partidoNoVoto && !(partidoAtual && v.partidoNoVoto.includes(partidoAtual)) && (
+            <span>Partido ou federação na data: {v.partidoNoVoto}. </span>
+          )}
           <a href={v.urlFonte} target="_blank" rel="noopener noreferrer">
             Registro oficial da votação
           </a>

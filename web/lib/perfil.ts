@@ -289,7 +289,7 @@ export type TempoAfastado = { legislatura: number; diasAfastado: number; diasDec
 
 // Dias afastado em cada legislatura com mandato (até hoje na legislatura em curso). Períodos que se
 // sobrepõem são unidos antes de contar. Câmara: a data de fim é o dia do retorno (não conta);
-// Senado: a data de fim é o último dia da licença (conta).
+// Senado e ALESP: a data de fim é o último dia (ALESP: da última sessão) da licença (conta).
 export async function getTempoAfastado(id: number): Promise<TempoAfastado[]> {
   "use cache";
   cacheDados();
@@ -297,7 +297,7 @@ export async function getTempoAfastado(id: number): Promise<TempoAfastado[]> {
     with af as (
       select range_agg(daterange(a.data_inicio,
                greatest(a.data_inicio + 1,
-                        coalesce(a.data_fim + case when p.casa_id = 'senado' then 1 else 0 end, current_date + 1)),
+                        coalesce(a.data_fim + case when p.casa_id in ('senado', 'al-sp') then 1 else 0 end, current_date + 1)),
                '[)')) as periodos
       from afastamento a join parlamentar p on p.id = a.parlamentar_id
       where a.parlamentar_id = ${id}

@@ -34,6 +34,7 @@ def main() -> None:
     pres.add_argument("--ate", type=date.fromisoformat, default=date.today())
     sub.add_parser("estaduais", help="deputados estaduais em exercício (Assembleias com dados abertos)")
     sub.add_parser("alesp-autorias", help="projetos de autoria dos deputados de SP, com a situação oficial")
+    sub.add_parser("alesp-votacoes", help="votações nominais do plenário da ALESP (relatórios em PDF)")
     ap = sub.add_parser("alesp-presencas", help="presença dos deputados de SP nas sessões deliberativas do plenário")
     ap.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=62))
     pr = sub.add_parser("presidente", help="projetos, medidas provisórias e vetos da Presidência")
@@ -60,6 +61,12 @@ def main() -> None:
         with db.connect() as conn, db.execucao(conn, args.cmd) as stats:
             stats["registros"] = alesp.autorias(conn)
         print(f"alesp-autorias: {stats['registros']} projetos")
+        return
+
+    if args.cmd == "alesp-votacoes":
+        with db.connect() as conn, db.execucao(conn, args.cmd) as stats:
+            stats["registros"] = alesp.votacoes(conn)
+        print(f"alesp-votacoes: {stats['registros']} votações")
         return
 
     if args.cmd == "alesp-presencas":

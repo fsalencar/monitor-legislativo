@@ -140,14 +140,22 @@ export function Afastamentos({
       )}
       {afastamentos.length === 0 ? (
         <p className={styles.nota}>
-          Nenhum afastamento ou licença registrado {casa === "senado" ? "pelo Senado" : "no histórico da Câmara"}.
+          Nenhum afastamento ou licença registrado{" "}
+          {casa === "senado"
+            ? "pelo Senado"
+            : casa === "al-sp"
+              ? "nas listas de presença do plenário da ALESP desde março de 2023"
+              : "no histórico da Câmara"}
+          .
         </p>
       ) : (
         <>
           <p className={styles.nota}>
             {casa === "senado"
               ? "Licenças e afastamentos registrados pelo Senado, com o tipo informado pela fonte (inclui missões oficiais de um dia)."
-              : "Períodos em que deixou o exercício do mandato, com o motivo registrado pela Câmara."}
+              : casa === "al-sp"
+                ? "Licenças registradas nas listas de presença do plenário da ALESP, com o tipo informado pela fonte. A ALESP não publica as datas de início e fim: o período vai da primeira à última sessão em que constava a licença (pode ter começado antes ou terminado depois)."
+                : "Períodos em que deixou o exercício do mandato, com o motivo registrado pela Câmara."}
           </p>
           <ul className={styles.afastamentos}>
             {afastamentos.map((a) => (

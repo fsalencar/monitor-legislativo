@@ -68,16 +68,14 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
           <Cabecalho p={p} />
           {p.casa === "al-sp" ? (
             <>
-              <Autoria id={p.id} casa={p.casa} autorias={autoria} />
+              <Votos
+                p={p}
+                cobertura="desde o início da legislatura, em março de 2023, nos relatórios oficiais de votação nominal do plenário"
+              />
               <Anuncio posicao="secao" />
+              <Autoria id={p.id} casa={p.casa} autorias={autoria} />
               <PresencaSessoes casa={p.casa} presenca={presenca} />
-              <section className={styles.secao}>
-                <h2>Votos em votações nominais</h2>
-                <p className={styles.nota}>
-                  A ALESP publica o voto de cada deputado apenas em PDF, anexo a cada votação nominal do plenário;
-                  esses votos ainda não foram carregados aqui. Afastamentos também não.
-                </p>
-              </section>
+              <Afastamentos casa={p.casa} afastamentos={afastamentos} tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)} />
             </>
           ) : assembleia ? (
             <>
@@ -208,6 +206,8 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
   const doMandato = senado ? mandatoAtualSenado(p.legislaturas) : [];
   // Titular, suplente...: só quando a fonte informa (Câmara e Senado).
   const comCondicao = p.legislaturas.some((l) => l.condicao);
+  // Afastamentos: Câmara, Senado e ALESP (licenças das listas de presença).
+  const comTempoAfastado = !assembleia || p.casa === "al-sp";
   return (
     <section className={styles.secao}>
       <h2>{senado ? "Mandatos no Senado" : `Legislaturas com mandato ${SIGLA_CASA[p.casa].na}`}</h2>
@@ -238,7 +238,7 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
               <th scope="col">Partido</th>
               <th scope="col">UF</th>
               {comCondicao && <th scope="col">Condição</th>}
-              {!assembleia && <th scope="col">Tempo afastado</th>}
+              {comTempoAfastado && <th scope="col">Tempo afastado</th>}
             </tr>
           </thead>
           <tbody>
@@ -251,7 +251,7 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
                 <td>{l.partido}</td>
                 <td>{l.uf}</td>
                 {comCondicao && <td>{l.condicao ?? "—"}</td>}
-                {!assembleia && <td>{l.situacao === "futura" ? "—" : textoDias(dias.get(l.numero))}</td>}
+                {comTempoAfastado && <td>{l.situacao === "futura" ? "—" : textoDias(dias.get(l.numero))}</td>}
               </tr>
             ))}
           </tbody>
