@@ -131,6 +131,7 @@ function Cabecalho({ p }: { p: Perfil }) {
         {p.nomeCivil && p.nomeCivil.toLowerCase() !== p.nome.toLowerCase() && (
           <p className={styles.nomeCivil}>Nome civil: {p.nomeCivil}</p>
         )}
+        {p.nascimento && <p className={styles.nomeCivil}>{textoNascimento(p.nascimento)}</p>}
         <a href={p.urlFonte} target="_blank" rel="noopener noreferrer" className={styles.fonte}>
           Página oficial {SIGLA_CASA[p.casa].na}
         </a>
@@ -205,6 +206,8 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
   const senado = p.casa === "senado";
   const assembleia = ehAssembleia(p.casa);
   const doMandato = senado ? mandatoAtualSenado(p.legislaturas) : [];
+  // Titular, suplente...: só quando a fonte informa (Câmara e Senado).
+  const comCondicao = p.legislaturas.some((l) => l.condicao);
   return (
     <section className={styles.secao}>
       <h2>{senado ? "Mandatos no Senado" : `Legislaturas com mandato ${SIGLA_CASA[p.casa].na}`}</h2>
@@ -234,6 +237,7 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
               <th scope="col">Legislatura</th>
               <th scope="col">Partido</th>
               <th scope="col">UF</th>
+              {comCondicao && <th scope="col">Condição</th>}
               {!assembleia && <th scope="col">Tempo afastado</th>}
             </tr>
           </thead>
@@ -246,6 +250,7 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
                 </td>
                 <td>{l.partido}</td>
                 <td>{l.uf}</td>
+                {comCondicao && <td>{l.condicao ?? "—"}</td>}
                 {!assembleia && <td>{l.situacao === "futura" ? "—" : textoDias(dias.get(l.numero))}</td>}
               </tr>
             ))}
@@ -254,4 +259,13 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
       </div>
     </section>
   );
+}
+
+const dataNascimento = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+// "Nascimento: 12 de março de 1970, em Recife (PE)", com o que a fonte informar.
+function textoNascimento(n: NonNullable<Perfil["nascimento"]>): string {
+  const local = n.municipio ? `${n.municipio}${n.uf ? ` (${n.uf})` : ""}` : null;
+  const data = n.data ? dataNascimento.format(new Date(n.data)) : null;
+  return `Nascimento: ${[data, local && `em ${local}`].filter(Boolean).join(", ")}`;
 }

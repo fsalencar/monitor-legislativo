@@ -10,6 +10,8 @@ export type Legislatura = {
   uf: string;
   emExercicio: boolean;
   situacao: "encerrada" | "em curso" | "futura";
+  // Titular, Suplente, Efetivado, 1º Suplente... (Câmara e Senado; null quando a fonte não informa).
+  condicao: string | null;
 };
 
 export type ProposicaoVotada = {
@@ -44,6 +46,8 @@ export type Perfil = {
   sexo: string | null;
   foto: string | null;
   urlFonte: string;
+  // Data e local de nascimento, quando a fonte informa (hoje, só a Câmara).
+  nascimento: { data: string | null; municipio: string | null; uf: string | null } | null;
   partido: string | null;
   uf: string | null;
   emExercicio: boolean;
@@ -87,8 +91,13 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
       sexo: string | null;
       url_foto: string | null;
       url_fonte: string;
+      data_nascimento: Date | null;
+      municipio_nascimento: string | null;
+      uf_nascimento: string | null;
     }[]
-  >`select id, casa_id, nome, nome_civil, sexo, url_foto, url_fonte from parlamentar where id = ${id}`;
+  >`select id, casa_id, nome, nome_civil, sexo, url_foto, url_fonte, data_nascimento, municipio_nascimento,
+           uf_nascimento
+    from parlamentar where id = ${id}`;
   if (!p) return null;
 
   const legs = await sql<
@@ -100,9 +109,10 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
       uf: string | null;
       em_exercicio: boolean;
       situacao: Legislatura["situacao"];
+      condicao: string | null;
     }[]
   >`
-    select m.legislatura as numero, l.data_inicio, l.data_fim, m.sigla_partido, m.uf, m.em_exercicio,
+    select m.legislatura as numero, l.data_inicio, l.data_fim, m.sigla_partido, m.uf, m.em_exercicio, m.condicao,
            case when l.data_inicio > current_date then 'futura'
                 when l.data_fim < current_date then 'encerrada'
                 else 'em curso' end as situacao
@@ -128,6 +138,10 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
     sexo: p.sexo,
     foto: p.url_foto,
     urlFonte: p.url_fonte,
+    nascimento:
+      p.data_nascimento || p.municipio_nascimento
+        ? { data: iso(p.data_nascimento), municipio: p.municipio_nascimento, uf: p.uf_nascimento }
+        : null,
     partido: atual ? (atual.sigla_partido ?? PARTIDO_NAO_INFORMADO) : null,
     uf: atual?.uf ?? null,
     emExercicio: legs.some((l) => l.em_exercicio),
@@ -140,6 +154,7 @@ export async function getPerfil(id: number): Promise<Perfil | null> {
       uf: l.uf ?? "",
       emExercicio: l.em_exercicio,
       situacao: l.situacao,
+      condicao: l.condicao,
     })),
     votos,
     totalVotos: Number(total),
