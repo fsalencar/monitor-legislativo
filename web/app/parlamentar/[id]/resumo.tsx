@@ -66,13 +66,13 @@ export function Resumo({
       itens.push({
         valor: reaisCurto.format(naLegislatura),
         rotulo: `gastos da cota na legislatura atual (desde ${MESES[mes - 1]}/${ano})`,
-        href: "#gastos",
+        href: "#gastos-inicio",
       });
     }
     const total = gastos.porMes.reduce((s, m) => s + m.valor, 0) + gastos.anteriores.reduce((s, a) => s + a.valor, 0);
     const desde = Math.min(...gastos.anteriores.map((a) => a.ano), ...gastos.porMes.map((m) => m.ano));
     if (gastos.anteriores.length > 0) {
-      itens.push({ valor: reaisCurto.format(total), rotulo: `gastos da cota ${SIGLA_CASA[p.casa].na} desde ${desde}`, href: "#gastos" });
+      itens.push({ valor: reaisCurto.format(total), rotulo: `gastos da cota ${SIGLA_CASA[p.casa].na} desde ${desde}`, href: "#gastos-inicio" });
     }
   }
 

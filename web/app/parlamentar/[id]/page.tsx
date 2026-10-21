@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Afastamentos, Autoria, PresencaSessoes } from "./atividade";
-import { GastosCota } from "./gastos";
+import { GastosCota, temGastos } from "./gastos";
 import { Resumo } from "./resumo";
 import {
   type TempoAfastado,
@@ -109,7 +109,13 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
               <Afastamentos casa={p.casa} afastamentos={afastamentos} tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)} />
             </>
           )}
-          <GastosCota casa={p.casa} gastos={gastos} urlFonte={p.urlFonte} />
+          {temGastos(p.casa) && (
+            // O resumo leva a este ponto (antes do anúncio), para o anúncio aparecer acima da seção de gastos.
+            <div id="gastos-inicio" className={styles.blocoGastos}>
+              <Anuncio posicao="secao" />
+              <GastosCota casa={p.casa} gastos={gastos} urlFonte={p.urlFonte} />
+            </div>
+          )}
           <Mandatos p={p} tempoAfastado={tempoAfastado} />
         </div>
 

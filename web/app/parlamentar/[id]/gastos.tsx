@@ -13,6 +13,10 @@ const NOME_COTA: Partial<Record<CasaId, string>> = {
   "al-sp": "verba de despesas de gabinete da ALESP",
 };
 
+export function temGastos(casa: CasaId): boolean {
+  return Boolean(NOME_COTA[casa]);
+}
+
 export function GastosCota({ casa, gastos, urlFonte }: { casa: CasaId; gastos: Gastos; urlFonte: string }) {
   const cota = NOME_COTA[casa];
   if (!cota) return null;

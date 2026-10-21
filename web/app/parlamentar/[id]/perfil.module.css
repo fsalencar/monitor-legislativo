@@ -759,3 +759,10 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Anúncio + seção de gastos: mesmo espaçamento das demais seções do perfil. */
+.blocoGastos {
+  display: grid;
+  gap: 2.75rem;
+  scroll-margin-top: 1rem;
+}
