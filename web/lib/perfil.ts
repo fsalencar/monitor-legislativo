@@ -194,7 +194,8 @@ export function textoCobertura(completa: boolean): string {
 // lei = virou norma jurídica; rejeitado = rejeitado ou vetado integralmente; caducou = perdeu a
 // eficácia ou foi revogado (típico de medidas provisórias); arquivado = arquivado, retirado,
 // prejudicado, tramitação encerrada...; tramitando = qualquer outra situação; sem = a fonte não informou.
-export const DESFECHOS = ["lei", "rejeitado", "caducou", "arquivado", "tramitando", "sem"] as const;
+// aprovado: aprovado pela Assembleia, mas o sistema dela não registra a lei resultante (SAPL do AC, por ex.).
+export const DESFECHOS = ["lei", "aprovado", "rejeitado", "caducou", "arquivado", "tramitando", "sem"] as const;
 export type Desfecho = (typeof DESFECHOS)[number];
 
 export const DESFECHO_SQL = sql`
@@ -209,6 +210,7 @@ export const DESFECHO_SQL = sql`
       else 'tramitando'
     end
     when pr.situacao ilike 'transformad% em norma%' then 'lei'
+    when pr.situacao ilike 'aprovada pela assembleia%' then 'aprovado'
     when pr.situacao ilike any (array['rejeitad%', 'vetad%']) then 'rejeitado'
     when pr.situacao ilike any (array['sem efic%', 'perdeu a efic%', 'revogad%']) then 'caducou'
     when pr.situacao ilike any (array['arquivad%', 'prejudicad%', 'retirad%', 'devolvid%',
@@ -245,7 +247,7 @@ export async function getAutorias(id: number): Promise<Autorias> {
   const contagem = await sql<{ desfecho: Desfecho; n: string }[]>`
     select ${DESFECHO_SQL} as desfecho, count(*) as n
     from autoria a join proposicao pr on pr.id = a.proposicao_id
-    where a.parlamentar_id = ${id} and pr.sigla_tipo = any(${TIPOS_PROJETO})
+    where a.parlamentar_id = ${id} and (pr.sigla_tipo = any(${TIPOS_PROJETO}) or pr.casa_id like 'al-%')
     group by 1
   `;
   const porDesfecho = Object.fromEntries(DESFECHOS.map((d) => [d, 0])) as Record<Desfecho, number>;
@@ -276,7 +278,7 @@ async function consultarProjetos(id: number, desfecho: Desfecho | null, inicio: 
              pr.resumo_simples as resumo, pr.situacao, ${DESFECHO_SQL} as desfecho, pr.url_fonte as url,
              pr.ano, pr.numero, pr.id
       from autoria a join proposicao pr on pr.id = a.proposicao_id
-      where a.parlamentar_id = ${id} and pr.sigla_tipo = any(${TIPOS_PROJETO})
+      where a.parlamentar_id = ${id} and (pr.sigla_tipo = any(${TIPOS_PROJETO}) or pr.casa_id like 'al-%')
     ) x
     where ${desfecho}::text is null or x.desfecho = ${desfecho}
     order by x.ano desc nulls last, x.numero desc nulls last, x.id desc

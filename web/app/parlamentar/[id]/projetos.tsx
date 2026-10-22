@@ -17,6 +17,7 @@ export type Filtro = { id: string | null; titulo: string };
 // Rótulos e filtros dos projetos de parlamentares (desfecho a partir da situação oficial).
 export const ROTULOS_DESFECHO: Record<string, string> = {
   lei: "Virou lei",
+  aprovado: "Aprovado pela Assembleia, sem registro da lei",
   rejeitado: "Rejeitado",
   caducou: "Perdeu a validade ou revogado",
   arquivado: "Arquivado ou retirado",
@@ -27,6 +28,7 @@ export const ROTULOS_DESFECHO: Record<string, string> = {
 export const FILTROS_DESFECHO: Filtro[] = [
   { id: null, titulo: "Todos" },
   { id: "lei", titulo: "Viraram lei" },
+  { id: "aprovado", titulo: "Aprovados, sem registro da lei" },
   { id: "rejeitado", titulo: "Rejeitados" },
   { id: "caducou", titulo: "Perderam a validade ou revogados" },
   { id: "arquivado", titulo: "Arquivados ou retirados" },

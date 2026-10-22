@@ -38,3 +38,21 @@ function preposicao(uf: string): string {
   if (["PB", "BA"].includes(uf)) return "da";
   return "de";
 }
+
+// Atividade carregada de cada Assembleia (o perfil mostra só o que existe; o resto é explicado).
+export type Atividade = { votos: boolean; projetos: boolean; presenca: boolean; afastamentos: boolean };
+const NADA: Atividade = { votos: false, projetos: false, presenca: false, afastamentos: false };
+const SAPL_COMPLETO: Atividade = { votos: true, projetos: true, presenca: true, afastamentos: false };
+export const ATIVIDADE: Record<Assembleia, Atividade> = {
+  "al-sp": { votos: true, projetos: true, presenca: true, afastamentos: true },
+  "al-am": SAPL_COMPLETO,
+  "al-ro": SAPL_COMPLETO,
+  "al-pb": SAPL_COMPLETO,
+  "al-ac": SAPL_COMPLETO,
+  // RR e TO: o SAPL não tem votos nominais nem listas de presença.
+  "al-rr": { ...NADA, projetos: true },
+  "al-to": { ...NADA, projetos: true },
+  "al-mg": NADA,
+  "al-es": NADA,
+  "al-pe": NADA,
+};

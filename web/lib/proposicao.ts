@@ -18,7 +18,8 @@ export type ResultadoBusca = {
 const MAX_RESULTADOS = 40;
 
 // "PL 2338/2023", "pec 45/19", "PL2338" -> tipo, número e ano (opcional).
-const SIGLA = /^\s*([a-z]{2,6})\.?\s*(?:n[º°o.]*\s*)?(\d{1,5})(?:\s*[/-]\s*(\d{2}|\d{4}))?\s*$/i;
+const SIGLA =
+  /^\s*([a-z]{2,6})\.?\s*(?:n[º°o.]*\s*)?(\d{1,5})(?:\s*[/-]\s*(\d{2}|\d{4}))?\s*$/i;
 
 export type ConsultaInterpretada =
   | { tipo: "sigla"; sigla: string; numero: number; ano: number | null }
@@ -28,8 +29,21 @@ export type ConsultaInterpretada =
 export function interpretarConsulta(q: string): ConsultaInterpretada {
   const m = q.match(SIGLA);
   if (m) {
-    const ano = m[3] ? Number(m[3].length === 2 ? (Number(m[3]) > 50 ? `19${m[3]}` : `20${m[3]}`) : m[3]) : null;
-    return { tipo: "sigla", sigla: m[1].toUpperCase(), numero: Number(m[2]), ano };
+    const ano = m[3]
+      ? Number(
+          m[3].length === 2
+            ? Number(m[3]) > 50
+              ? `19${m[3]}`
+              : `20${m[3]}`
+            : m[3],
+        )
+      : null;
+    return {
+      tipo: "sigla",
+      sigla: m[1].toUpperCase(),
+      numero: Number(m[2]),
+      ano,
+    };
   }
   // Só letras e números: os termos viram uma consulta de texto ("termo:*" = começo de palavra).
   const termos = q
@@ -54,7 +68,15 @@ export async function buscarProposicoes(q: string): Promise<ResultadoBusca[]> {
         sql`to_tsvector('simple', sem_acento(pr.ementa))
             @@ to_tsquery('simple', sem_acento(${c.termos.map((t) => `${t}:*`).join(" & ")}))`;
   const rows = await sql<
-    { id: string; casa_id: CasaProposicao; sigla: string; ementa: string | null; situacao: string | null; nominais: string; total: string }[]
+    {
+      id: string;
+      casa_id: CasaProposicao;
+      sigla: string;
+      ementa: string | null;
+      situacao: string | null;
+      nominais: string;
+      total: string;
+    }[]
   >`
     select pr.id, pr.casa_id, pr.sigla_tipo || ' ' || pr.numero || '/' || pr.ano as sigla, pr.ementa, pr.situacao,
            count(v.id) filter (where v.tipo in ('nominal', 'secreta')) as nominais, count(v.id) as total
@@ -90,7 +112,11 @@ export type VotacaoDaProposicao = {
   urlFonte: string;
   placar: Placar;
   // Por partido na data do voto: { partido, total, votos: { Sim: 10, Não: 3, ... } }.
-  porPartido: { partido: string; total: number; votos: Record<string, number> }[];
+  porPartido: {
+    partido: string;
+    total: number;
+    votos: Record<string, number>;
+  }[];
 };
 
 export type Proposicao = {
@@ -136,7 +162,9 @@ export async function getProposicao(id: number): Promise<Proposicao | null> {
   `;
   if (!p) return null;
 
-  const autores = await sql<{ nome_autor: string; parlamentar_id: string | null; total: string }[]>`
+  const autores = await sql<
+    { nome_autor: string; parlamentar_id: string | null; total: string }[]
+  >`
     select nome_autor, parlamentar_id, count(*) over () as total
     from autoria where proposicao_id = ${id}
     order by ordem nulls last, nome_autor
@@ -180,10 +208,15 @@ export async function getProposicao(id: number): Promise<Proposicao | null> {
     resumo: p.resumo_simples,
     temas: p.palavras_chave,
     situacao: p.situacao,
-    apresentacao: p.data_apresentacao ? p.data_apresentacao.toISOString().slice(0, 10) : null,
+    apresentacao: p.data_apresentacao
+      ? p.data_apresentacao.toISOString().slice(0, 10)
+      : null,
     url: p.url_fonte,
     urlTexto: p.url_inteiro_teor,
-    autores: autores.map((a) => ({ nome: a.nome_autor, parlamentarId: a.parlamentar_id ? Number(a.parlamentar_id) : null })),
+    autores: autores.map((a) => ({
+      nome: a.nome_autor,
+      parlamentarId: a.parlamentar_id ? Number(a.parlamentar_id) : null,
+    })),
     totalAutores: autores.length ? Number(autores[0].total) : 0,
     votacoes: votacoes.map((v) => ({
       id: Number(v.id),
@@ -199,13 +232,29 @@ export async function getProposicao(id: number): Promise<Proposicao | null> {
   };
 }
 
-export type VotoNominal = { parlamentarId: number; nome: string; partido: string | null; uf: string | null; voto: string };
+export type VotoNominal = {
+  parlamentarId: number;
+  nome: string;
+  partido: string | null;
+  uf: string | null;
+  voto: string;
+};
 
 // Voto de cada parlamentar numa votação, com partido e UF na data do voto.
-export async function getVotosDaVotacao(votacaoId: number): Promise<VotoNominal[]> {
+export async function getVotosDaVotacao(
+  votacaoId: number,
+): Promise<VotoNominal[]> {
   "use cache";
   cacheDados();
-  const rows = await sql<{ parlamentar_id: string; nome: string; sigla_partido: string | null; uf: string | null; voto: string }[]>`
+  const rows = await sql<
+    {
+      parlamentar_id: string;
+      nome: string;
+      sigla_partido: string | null;
+      uf: string | null;
+      voto: string;
+    }[]
+  >`
     select vo.parlamentar_id, p.nome, vo.sigla_partido, vo.uf, vo.voto
     from voto vo join parlamentar p on p.id = vo.parlamentar_id
     where vo.votacao_id = ${votacaoId}
@@ -221,7 +270,38 @@ export async function getVotosDaVotacao(votacaoId: number): Promise<VotoNominal[
 }
 
 // Tipos que são o projeto em si (requerimentos, pareceres e emendas são etapas da tramitação).
-const TIPOS_PRINCIPAIS = ["PL", "PLS", "PLP", "PLC", "PEC", "MPV", "PLV", "PDL", "PDC", "PDS", "PRC", "PRS", "PR", "PLN"];
+// Inclui as siglas de projetos usadas pelas Assembleias do SAPL (PLO, PRL, PRE, PLG...).
+const TIPOS_PRINCIPAIS = [
+  "PL",
+  "PLS",
+  "PLP",
+  "PLC",
+  "PEC",
+  "MPV",
+  "PLV",
+  "PDL",
+  "PDC",
+  "PDS",
+  "PRC",
+  "PRS",
+  "PR",
+  "PLN",
+  "PLO",
+  "PRL",
+  "PRE",
+  "PLG",
+  "PLCG",
+  "PLCC",
+  "PLCV",
+  "PLTJ",
+  "PLTC",
+  "PLMP",
+  "PLDP",
+  "PLCDP",
+  "PLCTJ",
+  "PLCMP",
+  "PC",
+];
 const VOTADAS_POR_CASA = 15;
 
 export type ProposicaoVotadaRecente = {

@@ -22,7 +22,7 @@ import {
 } from "@/lib/perfil";
 import { cargo, Localizador } from "./componentes";
 import { VotosLista } from "./votos";
-import { ehAssembleia, SIGLA_CASA } from "@/lib/casas";
+import { ATIVIDADE, ehAssembleia, SIGLA_CASA } from "@/lib/casas";
 import Anuncio from "../../Anuncio";
 import styles from "./perfil.module.css";
 
@@ -30,7 +30,9 @@ export function generateStaticParams() {
   return PARAMS_DE_BUILD;
 }
 
-export async function generateMetadata({ params }: PageProps<"/parlamentar/[id]">) {
+export async function generateMetadata({
+  params,
+}: PageProps<"/parlamentar/[id]">) {
   const id = idDoParametro((await params).id);
   const perfil = id ? await getPerfil(id) : null;
   return perfil ? { title: perfil.nome } : {};
@@ -40,23 +42,30 @@ const ano = (iso: string) => iso.slice(0, 4);
 
 export default function Page(props: PageProps<"/parlamentar/[id]">) {
   return (
-    <Suspense fallback={<p className={`moldura ${styles.carregando}`}>Carregando…</p>}>
+    <Suspense
+      fallback={<p className={`moldura ${styles.carregando}`}>Carregando…</p>}
+    >
       <Conteudo params={props.params} />
     </Suspense>
   );
 }
 
-async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["params"] }) {
+async function Conteudo({
+  params,
+}: {
+  params: PageProps<"/parlamentar/[id]">["params"];
+}) {
   const id = idDoParametro((await params).id);
   if (!id) notFound();
-  const [p, autoria, presenca, afastamentos, tempoAfastado, gastos] = await Promise.all([
-    getPerfil(id),
-    getAutorias(id),
-    getPresenca(id),
-    getAfastamentos(id),
-    getTempoAfastado(id),
-    getGastos(id),
-  ]);
+  const [p, autoria, presenca, afastamentos, tempoAfastado, gastos] =
+    await Promise.all([
+      getPerfil(id),
+      getAutorias(id),
+      getPresenca(id),
+      getAfastamentos(id),
+      getTempoAfastado(id),
+      getGastos(id),
+    ]);
   if (!p) notFound();
   const assembleia = ehAssembleia(p.casa);
   const completa = assembleia ? false : await getCoberturaVotosCompleta(p.casa);
@@ -75,38 +84,33 @@ async function Conteudo({ params }: { params: PageProps<"/parlamentar/[id]">["pa
             autoria={autoria}
             presenca={presenca}
             gastos={gastos}
-            // Afastamentos carregados: Câmara, Senado e ALESP; nas demais casas "0 dias" seria enganoso.
-            tempoMandatoAtual={!assembleia || p.casa === "al-sp" ? tempoMandatoAtual(p, tempoAfastado) : null}
+            // Só onde os afastamentos foram carregados; nas demais casas "0 dias" seria enganoso.
+            tempoMandatoAtual={
+              !assembleia ||
+              ATIVIDADE[p.casa as keyof typeof ATIVIDADE].afastamentos
+                ? tempoMandatoAtual(p, tempoAfastado)
+                : null
+            }
           />
-          {p.casa === "al-sp" ? (
-            <>
-              <Votos
-                p={p}
-                cobertura="desde o início da legislatura, em março de 2023, nos relatórios oficiais de votação nominal do plenário"
-              />
-              <Anuncio posicao="secao" />
-              <Autoria id={p.id} casa={p.casa} autorias={autoria} />
-              <PresencaSessoes casa={p.casa} presenca={presenca} />
-              <Afastamentos casa={p.casa} afastamentos={afastamentos} tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)} />
-            </>
-          ) : assembleia ? (
-            <>
-              <section className={styles.secao}>
-                <h2>Atividade parlamentar</h2>
-                <p className={styles.nota}>
-                  Votos, projetos de autoria, presença e afastamentos {SIGLA_CASA[p.casa].na} ainda não foram
-                  carregados. Por enquanto, consulte a página oficial do deputado.
-                </p>
-              </section>
-              <Anuncio posicao="secao" />
-            </>
+          {assembleia ? (
+            <AtividadeEstadual
+              p={p}
+              autoria={autoria}
+              presenca={presenca}
+              afastamentos={afastamentos}
+              tempoAfastado={tempoAfastado}
+            />
           ) : (
             <>
               <Votos p={p} cobertura={textoCobertura(completa)} />
               <Anuncio posicao="secao" />
               <Autoria id={p.id} casa={p.casa} autorias={autoria} />
               <PresencaSessoes casa={p.casa} presenca={presenca} />
-              <Afastamentos casa={p.casa} afastamentos={afastamentos} tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)} />
+              <Afastamentos
+                casa={p.casa}
+                afastamentos={afastamentos}
+                tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)}
+              />
             </>
           )}
           {temGastos(p.casa) && (
@@ -133,8 +137,15 @@ function Cabecalho({ p }: { p: Perfil }) {
   return (
     <header className={styles.cabecalho}>
       {/* Foto direto do site oficial; sem otimizador de imagens. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      {p.foto && <img src={p.foto} alt={`Foto oficial de ${p.nome}`} width={120} height={160} />}
+      {p.foto && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={p.foto}
+          alt={`Foto oficial de ${p.nome}`}
+          width={120}
+          height={160}
+        />
+      )}
       <div>
         <h1>{p.nome}</h1>
         <p className={styles.partidoUf}>
@@ -148,12 +159,89 @@ function Cabecalho({ p }: { p: Perfil }) {
         {p.nomeCivil && p.nomeCivil.toLowerCase() !== p.nome.toLowerCase() && (
           <p className={styles.nomeCivil}>Nome civil: {p.nomeCivil}</p>
         )}
-        {p.nascimento && <p className={styles.nomeCivil}>{textoNascimento(p.nascimento)}</p>}
-        <a href={p.urlFonte} target="_blank" rel="noopener noreferrer" className={styles.fonte}>
+        {p.nascimento && (
+          <p className={styles.nomeCivil}>{textoNascimento(p.nascimento)}</p>
+        )}
+        <a
+          href={p.urlFonte}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.fonte}
+        >
           Página oficial {SIGLA_CASA[p.casa].na}
         </a>
       </div>
     </header>
+  );
+}
+
+// Deputados estaduais: cada seção só onde a Assembleia publica o dado; o que falta é explicado.
+const COBERTURA_VOTOS: Record<string, string> = {
+  "al-sp":
+    "desde o início da legislatura, em março de 2023, nos relatórios oficiais de votação nominal do plenário",
+};
+const FALTA: Record<keyof (typeof ATIVIDADE)["al-sp"], string> = {
+  votos: "votos nominais",
+  projetos: "projetos de autoria",
+  presenca: "presença em sessões",
+  afastamentos: "afastamentos",
+};
+
+function AtividadeEstadual({
+  p,
+  autoria,
+  presenca,
+  afastamentos,
+  tempoAfastado,
+}: {
+  p: Perfil;
+  autoria: Awaited<ReturnType<typeof getAutorias>>;
+  presenca: Awaited<ReturnType<typeof getPresenca>>;
+  afastamentos: Awaited<ReturnType<typeof getAfastamentos>>;
+  tempoAfastado: TempoAfastado[];
+}) {
+  const tem = ATIVIDADE[p.casa as keyof typeof ATIVIDADE];
+  const faltando = (Object.keys(FALTA) as (keyof typeof FALTA)[])
+    .filter((k) => !tem[k])
+    .map((k) => FALTA[k]);
+  const lista = faltando.join(", ").replace(/, ([^,]*)$/, " e $1");
+  return (
+    <>
+      {tem.votos && (
+        <Votos
+          p={p}
+          cobertura={
+            COBERTURA_VOTOS[p.casa] ??
+            "desde fevereiro de 2023, no sistema de votação eletrônica do plenário da Assembleia (SAPL)"
+          }
+        />
+      )}
+      <Anuncio posicao="secao" />
+      {tem.projetos && <Autoria id={p.id} casa={p.casa} autorias={autoria} />}
+      {tem.presenca && <PresencaSessoes casa={p.casa} presenca={presenca} />}
+      {tem.afastamentos && (
+        <Afastamentos
+          casa={p.casa}
+          afastamentos={afastamentos}
+          tempoMandatoAtual={tempoMandatoAtual(p, tempoAfastado)}
+        />
+      )}
+      {faltando.length > 0 && (
+        <section className={styles.secao}>
+          <h2>
+            {tem.votos || tem.projetos
+              ? "Outros dados"
+              : "Atividade parlamentar"}
+          </h2>
+          <p className={styles.nota}>
+            {lista.charAt(0).toUpperCase() + lista.slice(1)}{" "}
+            {SIGLA_CASA[p.casa].na} não estão nos dados abertos publicados pela
+            Assembleia ou ainda não foram carregados. Consulte a página oficial
+            do deputado.
+          </p>
+        </section>
+      )}
+    </>
   );
 }
 
@@ -189,10 +277,16 @@ function textoDias(t: TempoAfastado | undefined): string {
 }
 
 // Soma das legislaturas do mandato atual (Câmara: a legislatura em curso; Senado: as duas do mandato).
-function tempoMandatoAtual(p: Perfil, tempo: TempoAfastado[]): { diasAfastado: number; diasDecorridos: number } | null {
-  const legs = p.casa === "senado"
-    ? mandatoAtualSenado(p.legislaturas).map((l) => l.numero)
-    : p.legislaturas.filter((l) => l.situacao === "em curso").map((l) => l.numero);
+function tempoMandatoAtual(
+  p: Perfil,
+  tempo: TempoAfastado[],
+): { diasAfastado: number; diasDecorridos: number } | null {
+  const legs =
+    p.casa === "senado"
+      ? mandatoAtualSenado(p.legislaturas).map((l) => l.numero)
+      : p.legislaturas
+          .filter((l) => l.situacao === "em curso")
+          .map((l) => l.numero);
   const doMandato = tempo.filter((t) => legs.includes(t.legislatura));
   if (!doMandato.length) return null;
   return {
@@ -214,11 +308,21 @@ function mandatoAtualSenado(legs: Legislatura[]): Legislatura[] {
   if (!atual) return [];
   const seguinte = legs.find((l) => l.numero === atual.numero + 1);
   const anterior = legs.find((l) => l.numero === atual.numero - 1);
-  const par = seguinte ? [atual, seguinte] : anterior ? [anterior, atual] : [atual];
+  const par = seguinte
+    ? [atual, seguinte]
+    : anterior
+      ? [anterior, atual]
+      : [atual];
   return par.sort((a, b) => a.numero - b.numero);
 }
 
-function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastado[] }) {
+function Mandatos({
+  p,
+  tempoAfastado,
+}: {
+  p: Perfil;
+  tempoAfastado: TempoAfastado[];
+}) {
   const dias = new Map(tempoAfastado.map((t) => [t.legislatura, t]));
   const senado = p.casa === "senado";
   const assembleia = ehAssembleia(p.casa);
@@ -229,25 +333,34 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
   const comTempoAfastado = !assembleia || p.casa === "al-sp";
   return (
     <section className={styles.secao}>
-      <h2>{senado ? "Mandatos no Senado" : `Legislaturas com mandato ${SIGLA_CASA[p.casa].na}`}</h2>
+      <h2>
+        {senado
+          ? "Mandatos no Senado"
+          : `Legislaturas com mandato ${SIGLA_CASA[p.casa].na}`}
+      </h2>
       {doMandato.length > 0 && (
         <p className={styles.mandatoSenado}>
-          Mandato atual: {ano(doMandato[0].inicio)} a {ano(doMandato[doMandato.length - 1].fim ?? doMandato[0].inicio)}
+          Mandato atual: {ano(doMandato[0].inicio)} a{" "}
+          {ano(doMandato[doMandato.length - 1].fim ?? doMandato[0].inicio)}
           <span>
             {" "}
-            (8 anos, {doMandato.map((l) => `${l.numero}ª`).join(" e ")} legislaturas)
+            (8 anos, {doMandato.map((l) => `${l.numero}ª`).join(" e ")}{" "}
+            legislaturas)
           </span>
         </p>
       )}
       <p className={styles.nota}>
-        {assembleia
-          ? "Legislatura é o período de 4 anos de trabalho da Assembleia; cada uma corresponde a um mandato de deputado estadual. A fonte não informa o partido de legislaturas anteriores."
-          : <>
-              Legislatura é o período de 4 anos de trabalho do Congresso, numerado desde 1826.{" "}
-              {senado
-                ? "O mandato de senador dura 8 anos e cobre duas legislaturas. A fonte não informa o partido de mandatos anteriores."
-                : "Cada legislatura corresponde a um mandato de deputado."}
-            </>}
+        {assembleia ? (
+          "Legislatura é o período de 4 anos de trabalho da Assembleia; cada uma corresponde a um mandato de deputado estadual. A fonte não informa o partido de legislaturas anteriores."
+        ) : (
+          <>
+            Legislatura é o período de 4 anos de trabalho do Congresso, numerado
+            desde 1826.{" "}
+            {senado
+              ? "O mandato de senador dura 8 anos e cobre duas legislaturas. A fonte não informa o partido de mandatos anteriores."
+              : "Cada legislatura corresponde a um mandato de deputado."}
+          </>
+        )}
       </p>
       <div className={styles.tabelaRolagem}>
         <table className={styles.tabela}>
@@ -264,13 +377,22 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
             {p.legislaturas.map((l) => (
               <tr key={l.numero}>
                 <td>
-                  <strong>{l.numero}ª</strong>, {INICIO[l.situacao]} {ano(l.inicio)}
-                  {l.situacao !== "encerrada" && <span className={styles.situacao}> {l.situacao}</span>}
+                  <strong>{l.numero}ª</strong>, {INICIO[l.situacao]}{" "}
+                  {ano(l.inicio)}
+                  {l.situacao !== "encerrada" && (
+                    <span className={styles.situacao}> {l.situacao}</span>
+                  )}
                 </td>
                 <td>{l.partido}</td>
                 <td>{l.uf}</td>
                 {comCondicao && <td>{l.condicao ?? "—"}</td>}
-                {comTempoAfastado && <td>{l.situacao === "futura" ? "—" : textoDias(dias.get(l.numero))}</td>}
+                {comTempoAfastado && (
+                  <td>
+                    {l.situacao === "futura"
+                      ? "—"
+                      : textoDias(dias.get(l.numero))}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -280,11 +402,18 @@ function Mandatos({ p, tempoAfastado }: { p: Perfil; tempoAfastado: TempoAfastad
   );
 }
 
-const dataNascimento = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+const dataNascimento = new Intl.DateTimeFormat("pt-BR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
 
 // "Nascimento: 12 de março de 1970, em Recife (PE)", com o que a fonte informar.
 function textoNascimento(n: NonNullable<Perfil["nascimento"]>): string {
-  const local = n.municipio ? `${n.municipio}${n.uf ? ` (${n.uf})` : ""}` : null;
+  const local = n.municipio
+    ? `${n.municipio}${n.uf ? ` (${n.uf})` : ""}`
+    : null;
   const data = n.data ? dataNascimento.format(new Date(n.data)) : null;
   return `Nascimento: ${[data, local && `em ${local}`].filter(Boolean).join(", ")}`;
 }

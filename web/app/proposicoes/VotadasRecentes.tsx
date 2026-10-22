@@ -16,13 +16,21 @@ const CASAS: { id: CasaProposicao | null; titulo: string }[] = [
   { id: null, titulo: "Todas" },
   { id: "camara", titulo: "Câmara" },
   { id: "senado", titulo: "Senado" },
-  { id: "al-sp", titulo: "ALESP (SP)" },
+  { id: "al-sp", titulo: "SP" },
+  { id: "al-am", titulo: "AM" },
+  { id: "al-pb", titulo: "PB" },
+  { id: "al-ro", titulo: "RO" },
+  { id: "al-ac", titulo: "AC" },
 ];
 
 const NOME_CURTO: Partial<Record<CasaProposicao, string>> = {
   camara: "Câmara dos Deputados",
   senado: "Senado Federal",
   "al-sp": "Assembleia Legislativa de SP",
+  "al-am": "Assembleia Legislativa do AM",
+  "al-pb": "Assembleia Legislativa da PB",
+  "al-ro": "Assembleia Legislativa de RO",
+  "al-ac": "Assembleia Legislativa do AC",
   congresso: "Congresso Nacional",
 };
 

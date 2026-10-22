@@ -32,7 +32,14 @@ export function Resumo({
   const itens: Item[] = [];
   const atual = p.legislaturas.find((l) => l.situacao === "em curso");
 
-  if (autoria.total > 0) {
+  if (autoria.total > 0 && autoria.porDesfecho.lei === 0 && autoria.porDesfecho.aprovado > 0) {
+    // A Assembleia não registra as leis no sistema: mostra o que dá para afirmar.
+    itens.push({
+      valor: `${numero.format(autoria.porDesfecho.aprovado)} de ${numero.format(autoria.total)}`,
+      rotulo: "projetos de autoria aprovados pela Assembleia",
+      href: "#projetos",
+    });
+  } else if (autoria.total > 0) {
     itens.push({
       valor: `${numero.format(autoria.porDesfecho.lei)} de ${numero.format(autoria.total)}`,
       rotulo: "projetos de autoria que viraram lei",

@@ -35,8 +35,17 @@ export function Autoria({ id, casa, autorias }: { id: number; casa: CasaId; auto
             {casa === "al-sp" && " (na ALESP, o andamento oficial que define o desfecho, como a publicação da lei)"}.
           </p>
           <p className={styles.desfechoResumo}>
-            <strong>{n(porDesfecho.lei)}</strong> {porDesfecho.lei === 1 ? "virou lei" : "viraram lei"} de {n(total)}{" "}
-            apresentados.{" "}
+            {porDesfecho.lei === 0 && porDesfecho.aprovado > 0 ? (
+              <>
+                <strong>{n(porDesfecho.aprovado)}</strong> aprovados pela Assembleia de {n(total)} apresentados (o
+                sistema da Assembleia não registra se viraram lei).{" "}
+              </>
+            ) : (
+              <>
+                <strong>{n(porDesfecho.lei)}</strong> {porDesfecho.lei === 1 ? "virou lei" : "viraram lei"} de{" "}
+                {n(total)} apresentados.{" "}
+              </>
+            )}
             <span>
               {n(porDesfecho.rejeitado)} {porDesfecho.rejeitado === 1 ? "rejeitado" : "rejeitados"};{" "}
               {porDesfecho.caducou > 0 && `${n(porDesfecho.caducou)} perderam a validade ou foram revogados; `}
@@ -77,6 +86,9 @@ export function PresencaSessoes({ casa, presenca }: { casa: CasaId; presenca: Pr
             {casa === "al-sp" &&
               "; períodos de licença também não. Ausência em missão oficial (comissão de representação, CPI, audiência pública) conta como justificada, com o motivo"}
             .
+            {casa.startsWith("al-") &&
+              casa !== "al-sp" &&
+              " O sistema da Assembleia (SAPL) registra os presentes e as ausências justificadas; quem tinha mandato vigente na data e não aparece em nenhum dos dois conta como ausência sem justificativa registrada. Licenças podem não constar desse registro."}
           </p>
           <dl className={styles.contagem}>
             <div>

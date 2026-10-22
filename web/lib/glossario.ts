@@ -15,4 +15,5 @@ export const GLOSSARIO: Record<string, string> = {
   Licenciado: "O deputado estava licenciado do mandato na data da votação (ALESP).",
   "Sem voto registrado": "O relatório oficial da votação não traz voto do deputado (ALESP).",
   Presidente: "Quem preside a sessão; aparece sem voto no relatório oficial da votação (ALESP).",
+  "Não Votou": "O sistema de votação da Assembleia (SAPL) registrou o deputado sem voto nesta votação.",
 };

@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from . import db
 from .site import avisar
 from .camara import CamaraClient
-from .jobs import (alesp, camara_atividade, gastos, camara_deputados, camara_votacoes, estaduais, presidente, resumos,
+from .jobs import (alesp, camara_atividade, gastos, sapl_atividade, camara_deputados, camara_votacoes, estaduais, presidente, resumos,
                    senado_atividade, senado_senadores)
 
 
@@ -38,6 +38,9 @@ def main() -> None:
     gp.add_argument("--desde", type=int, default=date.today().year - 1, help="ano inicial (padrão: ano passado)")
     gp.add_argument("--historico", action="store_true",
                     help="só o total por ano de 2008 a 2022 (antes do detalhamento mensal)")
+    sa = sub.add_parser("sapl-atividade", help="votos, presença e projetos nas Assembleias com SAPL (desde 2023)")
+    sa.add_argument("--casa", action="append", help="ex.: al-am (padrão: todas as do SAPL)")
+    sa.add_argument("--so", choices=["votacoes", "presencas", "autorias"], action="append", help="padrão: as três")
     sub.add_parser("alesp-votacoes", help="votações nominais do plenário da ALESP (relatórios em PDF)")
     ap = sub.add_parser("alesp-presencas", help="presença dos deputados de SP nas sessões deliberativas do plenário")
     ap.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=62))
@@ -78,6 +81,21 @@ def main() -> None:
             except Exception as e:  # noqa: BLE001 - uma fonte fora do ar não impede as outras
                 falhas.append(casa)
                 print(f"gastos-{casa}: falhou ({e!r})"[:300])
+        if falhas:
+            sys.exit(1)
+        return
+
+    if args.cmd == "sapl-atividade":
+        falhas = []
+        for casa in args.casa or list(estaduais.SAPL):
+            for etapa in args.so or ["votacoes", "presencas", "autorias"]:
+                try:
+                    with db.connect() as conn, db.execucao(conn, f"sapl-{etapa}-{casa}") as stats:
+                        stats["registros"] = getattr(sapl_atividade, etapa)(conn, casa)
+                    print(f"sapl-{etapa}-{casa}: {stats['registros']}", flush=True)
+                except Exception as e:  # noqa: BLE001 - uma Assembleia fora do ar não impede as outras
+                    falhas.append(f"{etapa}-{casa}")
+                    print(f"sapl-{etapa}-{casa}: falhou ({e!r})"[:300], flush=True)
         if falhas:
             sys.exit(1)
         return
