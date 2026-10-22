@@ -17,6 +17,18 @@ if (fs.existsSync(envRaiz)) {
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // plenarioaberto.org (sem www) leva ao www, menos o /ads.txt: o AdSense verifica o arquivo no
+  // domínio principal e ele responde ali mesmo, sem redirecionamento.
+  async redirects() {
+    return [
+      {
+        source: "/:caminho((?!ads\.txt$).*)",
+        has: [{ type: "host", value: "plenarioaberto.org" }],
+        destination: "https://www.plenarioaberto.org/:caminho",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
