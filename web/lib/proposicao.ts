@@ -31,9 +31,10 @@ export function interpretarConsulta(q: string): ConsultaInterpretada {
     const ano = m[3] ? Number(m[3].length === 2 ? (Number(m[3]) > 50 ? `19${m[3]}` : `20${m[3]}`) : m[3]) : null;
     return { tipo: "sigla", sigla: m[1].toUpperCase(), numero: Number(m[2]), ano };
   }
+  // Só letras e números: os termos viram uma consulta de texto ("termo:*" = começo de palavra).
   const termos = q
     .split(/\s+/)
-    .map((t) => t.replace(/[%_\\]/g, "").trim())
+    .map((t) => t.replace(/[^\p{L}\p{N}]/gu, ""))
     .filter((t) => t.length >= 3)
     .slice(0, 6);
   return termos.length ? { tipo: "texto", termos } : null;
@@ -49,10 +50,9 @@ export async function buscarProposicoes(q: string): Promise<ResultadoBusca[]> {
   const filtro =
     c.tipo === "sigla"
       ? sql`pr.sigla_tipo = ${c.sigla} and pr.numero = ${c.numero} and (${c.ano}::int is null or pr.ano = ${c.ano})`
-      : // A 1ª palavra usa o índice de trigramas; a subconsulta confere que todas aparecem.
-        sql`sem_acento(pr.ementa) like '%' || sem_acento(${c.termos[0]}) || '%'
-            and ${c.termos}::text[] <@ array(select t from unnest(${c.termos}::text[]) t
-                                              where sem_acento(pr.ementa) like '%' || sem_acento(t) || '%')`;
+      : // Índice de texto (migração 0010): todas as palavras, cada uma também como começo de palavra.
+        sql`to_tsvector('simple', sem_acento(pr.ementa))
+            @@ to_tsquery('simple', sem_acento(${c.termos.map((t) => `${t}:*`).join(" & ")}))`;
   const rows = await sql<
     { id: string; casa_id: CasaProposicao; sigla: string; ementa: string | null; situacao: string | null; nominais: string; total: string }[]
   >`
