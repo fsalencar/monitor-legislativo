@@ -290,3 +290,15 @@ export async function getVotadasRecentes(): Promise<ProposicaoVotadaRecente[]> {
     votacoesNominais: Number(r.nominais),
   }));
 }
+
+// Proposições com votação nominal (para o mapa do site).
+export async function getIdsProposicoesVotadas(): Promise<number[]> {
+  "use cache";
+  cacheDados();
+  const rows = await sql<{ id: string }[]>`
+    select distinct vp.proposicao_id as id
+    from votacao_proposicao vp join votacao v on v.id = vp.votacao_id
+    where v.tipo in ('nominal', 'secreta')
+  `;
+  return rows.map((r) => Number(r.id));
+}
