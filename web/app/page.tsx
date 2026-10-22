@@ -2,6 +2,7 @@ import { CASAS, type CasaId } from "@/lib/casas";
 import { getPlenario } from "@/lib/plenario";
 import PainelPresidente from "./PainelPresidente";
 import Plenario from "./Plenario";
+import PainelProposicoes from "./proposicoes/PainelProposicoes";
 
 export default async function Home() {
   const listas = await Promise.all(CASAS.map((c) => getPlenario(c)));
@@ -9,7 +10,7 @@ export default async function Home() {
 
   return (
     <main className="moldura">
-      <Plenario casas={casas} presidente={<PainelPresidente />} />
+      <Plenario casas={casas} presidente={<PainelPresidente />} proposicoes={<PainelProposicoes />} />
     </main>
   );
 }

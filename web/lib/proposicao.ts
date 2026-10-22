@@ -219,3 +219,74 @@ export async function getVotosDaVotacao(votacaoId: number): Promise<VotoNominal[
     voto: r.voto,
   }));
 }
+
+// Tipos que são o projeto em si (requerimentos, pareceres e emendas são etapas da tramitação).
+const TIPOS_PRINCIPAIS = ["PL", "PLS", "PLP", "PLC", "PEC", "MPV", "PLV", "PDL", "PDC", "PDS", "PRC", "PRS", "PR", "PLN"];
+const VOTADAS_POR_CASA = 15;
+
+export type ProposicaoVotadaRecente = {
+  id: number;
+  casa: CasaProposicao;
+  sigla: string;
+  ementa: string | null;
+  dataHora: string | null;
+  aprovada: boolean | null;
+  secreta: boolean;
+  sim: number;
+  nao: number;
+  votacoesNominais: number;
+};
+
+// Últimas proposições (projetos em si) com votação nominal, até VOTADAS_POR_CASA por casa, com o
+// resultado e o placar da votação nominal mais recente.
+export async function getVotadasRecentes(): Promise<ProposicaoVotadaRecente[]> {
+  "use cache";
+  cacheDados();
+  const rows = await sql<
+    {
+      id: string;
+      casa_id: CasaProposicao;
+      sigla: string;
+      ementa: string | null;
+      data_hora: Date | null;
+      aprovacao: boolean | null;
+      tipo: string;
+      sim: number;
+      nao: number;
+      nominais: number;
+    }[]
+  >`
+    select * from (
+      select x.*, row_number() over (partition by x.casa_id order by x.data_hora desc nulls last) as pos
+      from (
+        select pr.id, pr.casa_id, pr.sigla_tipo || ' ' || pr.numero || '/' || pr.ano as sigla, pr.ementa,
+               v.id as votacao_id, v.data_hora, v.aprovacao, v.tipo,
+               count(*) over (partition by pr.id) as nominais,
+               row_number() over (partition by pr.id order by v.data_hora desc nulls last, v.id desc) as rn
+        from votacao_proposicao vp
+        join votacao v on v.id = vp.votacao_id
+        join proposicao pr on pr.id = vp.proposicao_id
+        where v.tipo in ('nominal', 'secreta') and pr.sigla_tipo = any(${TIPOS_PRINCIPAIS})
+      ) x
+      where x.rn = 1
+    ) y
+    cross join lateral (
+      select count(*) filter (where voto = 'Sim')::int as sim, count(*) filter (where voto = 'Não')::int as nao
+      from voto where votacao_id = y.votacao_id
+    ) placar
+    where y.pos <= ${VOTADAS_POR_CASA}
+    order by y.data_hora desc nulls last
+  `;
+  return rows.map((r) => ({
+    id: Number(r.id),
+    casa: r.casa_id,
+    sigla: r.sigla,
+    ementa: r.ementa,
+    dataHora: r.data_hora ? r.data_hora.toISOString() : null,
+    aprovada: r.aprovacao,
+    secreta: r.tipo === "secreta",
+    sim: r.sim,
+    nao: r.nao,
+    votacoesNominais: Number(r.nominais),
+  }));
+}

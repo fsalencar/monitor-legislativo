@@ -10,13 +10,14 @@ import type { Parlamentar } from "@/lib/plenario";
 import styles from "./plenario.module.css";
 import { useNomeDigitado } from "./useNomeDigitado";
 
-type Aba = "estaduais" | "camara" | "senado" | "presidente";
+type Aba = "estaduais" | "camara" | "senado" | "presidente" | "proposicoes";
 
 const ABAS: { id: Aba; titulo: string }[] = [
   { id: "estaduais", titulo: "Deputados estaduais" },
   { id: "camara", titulo: "Deputados federais" },
   { id: "senado", titulo: "Senadores" },
   { id: "presidente", titulo: "Presidente" },
+  { id: "proposicoes", titulo: "Proposições" },
 ];
 
 // Unidades da federação com Assembleia (ou Câmara Legislativa, no DF): 26 estados + DF.
@@ -45,13 +46,13 @@ function assinarUrl(avisar: () => void) {
   return () => window.removeEventListener("popstate", avisar);
 }
 
-// ?casa= aceita camara, senado, presidente e a sigla da Assembleia (al-sp, al-mg...).
+// ?casa= aceita camara, senado, presidente, proposicoes e a sigla da Assembleia (al-sp, al-mg...).
 function lerCasaDaUrl(): string | null {
   return new URLSearchParams(window.location.search).get("casa");
 }
 
 function abaDe(casa: string | null): Aba | null {
-  if (casa === "camara" || casa === "senado" || casa === "presidente") return casa;
+  if (casa === "camara" || casa === "senado" || casa === "presidente" || casa === "proposicoes") return casa;
   if (casa === "estaduais" || ASSEMBLEIAS.some((a) => a.id === casa)) return "estaduais";
   return null;
 }
@@ -69,10 +70,12 @@ function normaliza(s: string) {
 export default function Plenario({
   casas,
   presidente,
+  proposicoes,
 }: {
   casas: Record<CasaId, Parlamentar[]>;
   // Painel da Presidência, montado no servidor e mostrado direto ao escolher a aba.
   presidente: React.ReactNode;
+  proposicoes: React.ReactNode;
 }) {
   // Aba no endereço (?casa=), para poder compartilhar o link; a escolha na página tem prioridade.
   const casaDaUrl = useSyncExternalStore(assinarUrl, lerCasaDaUrl, () => null);
@@ -83,7 +86,8 @@ export default function Plenario({
   const assembleia =
     assembleiaEscolhida ?? ASSEMBLEIAS.find((a) => a.id === casaDaUrl)?.id ?? ASSEMBLEIAS[0].id;
   // Casa cujo plenário aparece (nas abas que têm plenário).
-  const casaAtual: CasaId | null = aba === "estaduais" ? assembleia : aba === "presidente" ? null : aba;
+  const casaAtual: CasaId | null =
+    aba === "estaduais" ? assembleia : aba === "presidente" || aba === "proposicoes" ? null : aba;
   const [partido, setPartido] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
   // undefined = ainda não houve escolha na página; vale a cadeira do endereço.
@@ -124,6 +128,8 @@ export default function Plenario({
               ? `${ASSEMBLEIAS.length} estados · ${PERCENTUAL_ESTADOS}% do país`
               : a.id === "presidente"
                 ? "Mandato atual"
+                : a.id === "proposicoes"
+                  ? "Busca e votações"
                 : `${casas[a.id].length} cadeiras`;
           return (
             <button
@@ -183,8 +189,8 @@ export default function Plenario({
       )}
 
       {casaAtual === null ? (
-        <section id="painel-casa" role="tabpanel" aria-labelledby="aba-presidente">
-          {presidente}
+        <section id="painel-casa" role="tabpanel" aria-labelledby={`aba-${aba}`}>
+          {aba === "proposicoes" ? proposicoes : presidente}
         </section>
       ) : (
         <Casa

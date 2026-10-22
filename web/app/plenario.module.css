@@ -670,6 +670,10 @@
   .aba[aria-selected="true"] {
     border-bottom: 2px solid var(--ambar);
   }
+  /* Número ímpar de abas: a última ocupa a linha inteira. */
+  .aba:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Seletor de Assembleia (aba Deputados estaduais). */
