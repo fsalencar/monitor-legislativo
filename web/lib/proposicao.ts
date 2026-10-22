@@ -273,6 +273,7 @@ export async function getVotosDaVotacao(
 // Inclui as siglas de projetos usadas pelas Assembleias do SAPL (PLO, PRL, PRE, PLG...).
 const TIPOS_PRINCIPAIS = [
   "PL",
+  "VET",
   "PLS",
   "PLP",
   "PLC",

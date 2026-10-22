@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from . import db
 from .site import avisar
 from .camara import CamaraClient
-from .jobs import (alesp, camara_atividade, gastos, sapl_atividade, camara_deputados, camara_votacoes, estaduais, presidente, resumos,
+from .jobs import (alesp, camara_atividade, congresso, gastos, sapl_atividade, camara_deputados, camara_votacoes, estaduais, presidente, resumos,
                    senado_atividade, senado_senadores)
 
 
@@ -41,6 +41,7 @@ def main() -> None:
     sa = sub.add_parser("sapl-atividade", help="votos, presença e projetos nas Assembleias com SAPL (desde 2023)")
     sa.add_argument("--casa", action="append", help="ex.: al-am (padrão: todas as do SAPL)")
     sa.add_argument("--so", choices=["votacoes", "presencas", "autorias"], action="append", help="padrão: as três")
+    sub.add_parser("congresso-vetos", help="votações nominais de vetos nas sessões conjuntas do Congresso")
     sub.add_parser("alesp-votacoes", help="votações nominais do plenário da ALESP (relatórios em PDF)")
     ap = sub.add_parser("alesp-presencas", help="presença dos deputados de SP nas sessões deliberativas do plenário")
     ap.add_argument("--desde", type=date.fromisoformat, default=date.today() - timedelta(days=62))
@@ -98,6 +99,12 @@ def main() -> None:
                     print(f"sapl-{etapa}-{casa}: falhou ({e!r})"[:300], flush=True)
         if falhas:
             sys.exit(1)
+        return
+
+    if args.cmd == "congresso-vetos":
+        with db.connect() as conn, db.execucao(conn, args.cmd) as stats:
+            stats["registros"] = congresso.vetos(conn)
+        print(f"congresso-vetos: {stats['registros']} dispositivos votados")
         return
 
     if args.cmd == "alesp-votacoes":

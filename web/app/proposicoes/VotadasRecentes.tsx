@@ -16,6 +16,7 @@ const CASAS: { id: CasaProposicao | null; titulo: string }[] = [
   { id: null, titulo: "Todas" },
   { id: "camara", titulo: "Câmara" },
   { id: "senado", titulo: "Senado" },
+  { id: "congresso", titulo: "Congresso" },
   { id: "al-sp", titulo: "SP" },
   { id: "al-am", titulo: "AM" },
   { id: "al-pb", titulo: "PB" },

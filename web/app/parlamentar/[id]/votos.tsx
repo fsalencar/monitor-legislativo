@@ -96,7 +96,11 @@ function ItemVoto({ v, partidoAtual }: { v: VotoRegistrado; partidoAtual: string
       <div className={styles.votoCorpo}>
         <p className={styles.votoMeta}>
           {v.dataHora && <time dateTime={v.dataHora}>{dataCurta.format(new Date(v.dataHora))}</time>}
-          {v.orgao && v.orgao !== "PLEN" && <span>{v.orgao}</span>}
+          {v.orgao === "CN" ? (
+            <span title="Votação de veto: Sim mantém o veto; Não derruba.">Sessão do Congresso · veto (Sim mantém; Não derruba)</span>
+          ) : (
+            v.orgao && v.orgao !== "PLEN" && <span>{v.orgao}</span>
+          )}
           {v.proposicoes.map((pr) => (
             <Link key={pr.id} href={`/proposicao/${pr.id}`} className={styles.prop} title="Ver a proposição e todas as votações">
               {pr.sigla}

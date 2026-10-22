@@ -169,10 +169,18 @@ function Votacao({ v }: { v: VotacaoDaProposicao }) {
     <li className={styles.votacao}>
       <p className={p.votoMeta}>
         {v.dataHora && <time dateTime={v.dataHora}>{dataCurta.format(new Date(v.dataHora))}</time>}
-        {v.orgao && <span>{v.orgao === "PLEN" ? "Plenário" : v.orgao}</span>}
+        {v.orgao && (
+          <span>{v.orgao === "PLEN" ? "Plenário" : v.orgao === "CN" ? "Congresso (sessão conjunta)" : v.orgao}</span>
+        )}
         {resultado && <span className={styles.resultadoVotacao}>{resultado}</span>}
       </p>
       {v.descricao && <p className={p.votoDescricao}>{v.descricao}</p>}
+      {v.orgao === "CN" && (
+        <p className={styles.simbolica}>
+          Votação de veto por cédula: Sim é pela manutenção do veto e Não, pela derrubada. Derrubar exige a maioria
+          absoluta de cada casa (257 deputados e 41 senadores); se a Câmara mantém o veto, o Senado não vota.
+        </p>
+      )}
 
       {v.tipo === "simbolica" ? (
         <p className={styles.simbolica}>Votação simbólica — sem registro nominal.</p>
