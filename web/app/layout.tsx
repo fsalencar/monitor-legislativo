@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Atkinson_Hyperlegible, Libre_Caslon_Text } from "next/font/google";
+import { Atkinson_Hyperlegible, Libre_Caslon_Text, Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 import Anuncio from "./Anuncio";
 import Rodape from "./Rodape";
+import { Simbolo } from "./Simbolo";
 import { ADSENSE_CLIENTE as ADSENSE } from "@/lib/adsense";
 import "./globals.css";
 
@@ -20,6 +21,13 @@ const nomes = Libre_Caslon_Text({
   style: ["italic"],
 });
 
+// Fonte do nome da marca (logotipo), só no topo.
+const marca = Plus_Jakarta_Sans({
+  variable: "--fonte-marca",
+  subsets: ["latin"],
+  weight: ["800"],
+});
+
 export const metadata: Metadata = {
   title: { default: "Plenário Aberto — Você no plenário.", template: "%s | Plenário Aberto" },
   description:
@@ -35,7 +43,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${ui.variable} ${nomes.variable}`}>
+    <html lang="pt-BR" className={`${ui.variable} ${nomes.variable} ${marca.variable}`}>
       <head>
         {/* Tag do AdSense como o Google recomenda: <script> simples no <head> (o componente Script
             do Next acrescenta data-nscript, que o AdSense não aceita). */}
@@ -50,19 +58,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <header className="barra">
           <div className="moldura">
-            <Link href="/" className="marca">
-              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M12 1.5 13.9 10.1 22.5 12 13.9 13.9 12 22.5 10.1 13.9 1.5 12 10.1 10.1Z"
-                  fill="currentColor"
-                />
-              </svg>
-              Plenário Aberto
+            <Link href="/" className="marca" aria-label="Plenário Aberto, página inicial">
+              <Simbolo tamanho={34} />
+              <span>
+                Plenário <span className="marcaAberto">Aberto</span>
+              </span>
             </Link>
             <nav aria-label="Seções" className="secoes">
               <Link href="/proposicoes">Proposições</Link>
             </nav>
-            <p>Dados oficiais do Congresso, sem opiniões pessoais ou manipulação de dados.</p>
+            <p>Você no plenário. Dados oficiais, sem opiniões pessoais ou manipulação de dados.</p>
           </div>
         </header>
         {children}

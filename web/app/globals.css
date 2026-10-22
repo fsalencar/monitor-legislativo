@@ -138,8 +138,19 @@ h3 {
 }
 
 .marca svg {
-  color: var(--lanterna);
+  color: var(--poeira);
   flex: none;
+}
+
+.marca > span {
+  font-family: var(--fonte-marca), var(--fonte-ui), sans-serif;
+  font-weight: 800;
+  font-size: 1.1875rem;
+  letter-spacing: -0.02em;
+}
+
+.marcaAberto {
+  color: #2dd4bf;
 }
 
 /* Links de seção ao lado da marca. */
