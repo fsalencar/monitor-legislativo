@@ -30,7 +30,16 @@ const marca = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  // Endereço absoluto para as imagens de compartilhamento (WhatsApp, redes): app/opengraph-image.png.
+  metadataBase: new URL("https://www.plenarioaberto.org"),
   title: { default: "Plenário Aberto — Você no plenário.", template: "%s | Plenário Aberto" },
+  openGraph: {
+    siteName: "Plenário Aberto",
+    locale: "pt_BR",
+    type: "website",
+    description:
+      "Como vota, o que propõe, a presença e os gastos da cota de cada parlamentar, com dados das fontes oficiais.",
+  },
   description:
     "Quem ocupa cada cadeira na Câmara dos Deputados, no Senado Federal e nas Assembleias Legislativas, como votou, o que propôs e quanto gastou da cota, com dados das fontes oficiais.",
   // Verificação do site no AdSense (meta tag google-adsense-account).
