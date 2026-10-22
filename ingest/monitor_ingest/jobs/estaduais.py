@@ -6,6 +6,7 @@
 - ALES e ALEPE: só a lista atual (nome e partido), sem identificador; o nome faz as vezes de id.
 """
 import re
+import threading
 import time
 import unicodedata
 from datetime import date
@@ -57,11 +58,34 @@ def _cliente() -> httpx.Client:
                         headers={"User-Agent": "plenario-aberto (ingestao)", "Accept": "application/json"})
 
 
+# Servidores que bloqueiam por um tempo quem faz muitas consultas seguidas: intervalo mínimo entre
+# consultas (segundos), valendo para todas as threads.
+INTERVALO_MINIMO = {"sapl.al.pb.leg.br": 1.0}
+_ultima_consulta: dict[str, float] = {}
+_trava = threading.Lock()
+
+
+def _esperar_vez(url: str) -> None:
+    host = httpx.URL(url).host
+    if host not in INTERVALO_MINIMO:
+        return
+    with _trava:
+        espera = _ultima_consulta.get(host, 0) + INTERVALO_MINIMO[host] - time.monotonic()
+        if espera > 0:
+            time.sleep(espera)
+        _ultima_consulta[host] = time.monotonic()
+
+
+def host_lento(url: str) -> bool:
+    return httpx.URL(url).host in INTERVALO_MINIMO
+
+
 def _json(http: httpx.Client, url: str, tentativas: int = 5) -> dict:
     """GET com novas tentativas: a ALMG às vezes devolve uma página de erro (não JSON) sob carga."""
     r = None
     for t in range(tentativas):
         try:
+            _esperar_vez(url)
             # Mescla com a query string da URL (params= sozinho a substituiria, perdendo a paginação).
             r = http.get(httpx.URL(url).copy_merge_params({"formato": "json"}))
             if r.status_code == 200 and r.headers.get("content-type", "").startswith("application/json"):
@@ -70,7 +94,8 @@ def _json(http: httpx.Client, url: str, tentativas: int = 5) -> dict:
             # Servidor que não respondeu ou derrubou a conexão: espera e tenta de novo.
             if t == tentativas - 1:
                 raise
-        time.sleep(3 * (t + 1))
+        # Espera crescente: dá tempo de um bloqueio temporário do servidor passar.
+        time.sleep(10 * (t + 1) if host_lento(url) else 3 * (t + 1))
     r.raise_for_status()
     raise RuntimeError(f"resposta não-JSON de {url}: {r.text[:120]!r}")
 
