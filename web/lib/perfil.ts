@@ -470,3 +470,60 @@ export async function getGastos(id: number): Promise<Gastos> {
     anteriores: anteriores.map((a) => ({ ano: a.ano, valor: Number(a.valor) })),
   };
 }
+
+export type ResumoCurto = {
+  projetos: number;
+  leis: number;
+  aprovados: number;
+  sessoes: number;
+  presencas: number;
+  // Gastos da cota desde o início da legislatura em curso (null: sem dados de gastos nesta casa).
+  gastosLegislatura: number | null;
+  inicioLegislatura: string | null;
+};
+
+// Números do cartão do plenário (só contagens; o detalhe fica no perfil).
+export async function getResumoCurto(id: number): Promise<ResumoCurto> {
+  "use cache";
+  cacheDados();
+  const [r] = await sql<
+    {
+      projetos: string;
+      leis: string;
+      aprovados: string;
+      sessoes: string;
+      presencas: string;
+      gastos: string | null;
+      tem_gastos: boolean;
+      inicio: Date | null;
+    }[]
+  >`
+    with leg as (
+      select l.data_inicio from mandato m join legislatura l on l.casa_id = m.casa_id and l.numero = m.legislatura
+      where m.parlamentar_id = ${id} and l.data_inicio <= current_date and (l.data_fim is null or l.data_fim >= current_date)
+      order by l.data_inicio desc limit 1
+    ), proj as (
+      select ${DESFECHO_SQL} as desfecho
+      from autoria a join proposicao pr on pr.id = a.proposicao_id
+      where a.parlamentar_id = ${id} and (pr.sigla_tipo = any(${TIPOS_PROJETO}) or pr.casa_id like 'al-%')
+    )
+    select (select count(*) from proj) as projetos,
+           (select count(*) from proj where desfecho = 'lei') as leis,
+           (select count(*) from proj where desfecho = 'aprovado') as aprovados,
+           (select count(*) from presenca where parlamentar_id = ${id}) as sessoes,
+           (select count(*) from presenca where parlamentar_id = ${id} and situacao = 'Presença') as presencas,
+           (select sum(d.valor) from despesa_mensal d, leg
+             where d.parlamentar_id = ${id} and make_date(d.ano, d.mes, 1) >= date_trunc('month', leg.data_inicio)) as gastos,
+           exists (select 1 from despesa_mensal where parlamentar_id = ${id}) as tem_gastos,
+           (select data_inicio from leg) as inicio
+  `;
+  return {
+    projetos: Number(r.projetos),
+    leis: Number(r.leis),
+    aprovados: Number(r.aprovados),
+    sessoes: Number(r.sessoes),
+    presencas: Number(r.presencas),
+    gastosLegislatura: r.tem_gastos ? Number(r.gastos ?? 0) : null,
+    inicioLegislatura: r.inicio ? r.inicio.toISOString().slice(0, 10) : null,
+  };
+}

@@ -8,6 +8,7 @@ import { contarPartidos, ordenarCadeiras } from "@/lib/ordem";
 import { ASSEMBLEIAS, SIGLA_CASA, type Assembleia, type CasaId } from "@/lib/casas";
 import type { Parlamentar } from "@/lib/plenario";
 import styles from "./plenario.module.css";
+import { ResumoCartao } from "./ResumoCartao";
 import { useNomeDigitado } from "./useNomeDigitado";
 
 type Aba = "estaduais" | "camara" | "senado" | "presidente" | "proposicoes";
@@ -655,6 +656,7 @@ function Cartao({ p, casa, cor, fechar }: { p: Parlamentar; casa: CasaId; cor: s
           </dl>
         </div>
       </div>
+      <ResumoCartao id={p.id} />
       <div className={styles.acoes}>
         <Link href={`/parlamentar/${p.id}`} className={styles.atividade}>
           Ver atividade

@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Afastamentos, Autoria, PresencaSessoes } from "./atividade";
 import { GastosCota, temGastos } from "./gastos";
 import { Resumo } from "./resumo";
+import { RolarParaAncora } from "./RolarParaAncora";
 import {
   type TempoAfastado,
   getAfastamentos,
@@ -121,6 +122,7 @@ async function Conteudo({
             </div>
           )}
           <Mandatos p={p} tempoAfastado={tempoAfastado} />
+          <RolarParaAncora />
         </div>
 
         {p.emExercicio && (
