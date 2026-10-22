@@ -47,7 +47,8 @@ export const ATIVIDADE: Record<Assembleia, Atividade> = {
   "al-sp": { votos: true, projetos: true, presenca: true, afastamentos: true },
   "al-am": SAPL_COMPLETO,
   "al-ro": SAPL_COMPLETO,
-  "al-pb": SAPL_COMPLETO,
+  // PB: o SAPL da Assembleia estava fora do ar na 1ª carga; religar quando os dados entrarem.
+  "al-pb": NADA,
   "al-ac": SAPL_COMPLETO,
   // RR e TO: o SAPL não tem votos nominais nem listas de presença.
   "al-rr": { ...NADA, projetos: true },
