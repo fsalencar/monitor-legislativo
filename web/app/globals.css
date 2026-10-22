@@ -143,6 +143,7 @@ h3 {
 }
 
 .marca > span {
+  white-space: nowrap;
   font-family: var(--fonte-marca), var(--fonte-ui), sans-serif;
   font-weight: 800;
   font-size: 1.1875rem;
@@ -170,8 +171,23 @@ h3 {
   font-size: 0.9375rem;
 }
 
-.secoes a:hover {
+.secoes a:hover,
+.linkComoUsar:hover {
   color: var(--ambar);
+}
+
+.linkComoUsar {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--poeira);
+  font: inherit;
+  font-size: 0.9375rem;
+  cursor: pointer;
 }
 
 .barra p {
@@ -267,4 +283,186 @@ h3 {
 
 .rodapeLinks a {
   color: var(--poeira);
+}
+
+/* Apresentação do site (boas-vindas) */
+.boasVindas {
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 1px solid var(--linha-forte);
+  border-radius: calc(var(--raio) * 2);
+  background: var(--ceu);
+  color: var(--poeira);
+  box-shadow: var(--sombra);
+}
+
+.boasVindas::backdrop {
+  background: rgb(4 8 18 / 0.72);
+}
+
+.boasVindas[open] {
+  animation: boasVindasEntra 220ms ease-out;
+}
+
+@keyframes boasVindasEntra {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boasVindas[open] {
+    animation: none;
+  }
+}
+
+.boasVindasCorpo {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+  line-height: 1.55;
+}
+
+.boasVindasTopo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-right: 2rem;
+}
+
+.boasVindasTopo h2 {
+  margin: 0;
+  font-family: var(--fonte-marca), var(--fonte-ui), sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.boasVindasCorpo p {
+  margin: 0;
+  color: var(--nevoa);
+}
+
+.boasVindasCorpo h3 {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+}
+
+.boasVindasCorpo ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.45rem;
+  color: var(--nevoa);
+}
+
+.boasVindasCorpo ol strong {
+  color: var(--poeira);
+}
+
+.boasVindasFechar {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: var(--raio);
+  background: none;
+  color: var(--nevoa);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.boasVindasFechar:hover {
+  color: var(--poeira);
+  background: var(--indigo);
+}
+
+.boasVindasRodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--linha);
+}
+
+.boasVindasRodape label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  color: var(--nevoa);
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.boasVindasRodape input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--ambar);
+}
+
+.boasVindasComecar {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.4rem;
+  border: 0;
+  border-radius: var(--raio);
+  background: var(--ambar);
+  color: var(--ceu);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Topo em telas estreitas: marca e links numa linha só. */
+@media (max-width: 26rem) {
+  .barra .moldura {
+    gap: 0.6rem;
+  }
+
+  .marca {
+    gap: 0.4rem;
+  }
+
+  .marca svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .marca > span {
+    font-size: 1.0625rem;
+  }
+
+  .secoes {
+    gap: 0.75rem;
+    padding-left: 0;
+  }
+
+  .secoes a,
+  .linkComoUsar {
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+}
+
+.comoUsarCurto {
+  display: none;
+}
+
+@media (max-width: 22rem) {
+  .comoUsarLongo {
+    display: none;
+  }
+
+  .comoUsarCurto {
+    display: inline;
+  }
 }

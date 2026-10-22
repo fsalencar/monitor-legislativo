@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Libre_Caslon_Text, Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 import Anuncio from "./Anuncio";
+import { BoasVindas, LinkComoUsar } from "./BoasVindas";
 import Rodape from "./Rodape";
 import { Simbolo } from "./Simbolo";
 import { ADSENSE_CLIENTE as ADSENSE } from "@/lib/adsense";
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </Link>
             <nav aria-label="Seções" className="secoes">
               <Link href="/proposicoes">Proposições</Link>
+              <LinkComoUsar />
             </nav>
             <p>Você no plenário. Dados oficiais, sem opiniões pessoais ou manipulação de dados.</p>
           </div>
@@ -73,6 +75,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {children}
         <Anuncio />
         <Rodape />
+        <BoasVindas />
       </body>
     </html>
   );
